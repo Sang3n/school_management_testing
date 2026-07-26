@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pathaibhara</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#1e1b4b' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- React 18 & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const ROLES = [
+      { code: 'SUPER_ADMIN', name: 'Super Admin', color: 'indigo' },
+      { code: 'SCHOOL_ADMIN', name: 'School Admin', color: 'blue' },
+      { code: 'PRINCIPAL', name: 'Principal', color: 'purple' },
+      { code: 'VICE_PRINCIPAL', name: 'Vice Principal', color: 'amber' },
+      { code: 'ACCOUNTANT', name: 'Accountant', color: 'emerald' },
+      { code: 'TEACHER', name: 'Teacher', color: 'cyan' },
+      { code: 'LIBRARIAN', name: 'Librarian', color: 'teal' },
+      { code: 'RECEPTIONIST', name: 'Receptionist', color: 'pink' },
+      { code: 'STUDENT', name: 'Student', color: 'rose' },
+      { code: 'PARENT', name: 'Parent', color: 'violet' },
+    ];
+
+    const INITIAL_STUDENTS = [
+      { id: 's1', name: 'Ethan Hunt', email: 'ethan@sms.edu', roll: '1001', admission: 'ADM-10045', class: 'Grade 10-A', house: 'Gryffindor', status: 'ACTIVE', allergies: 'Peanuts', emergency: '+1 555-999-8888' },
+      { id: 's2', name: 'Sophia Miller', email: 'sophia@sms.edu', roll: '1002', admission: 'ADM-10046', class: 'Grade 10-A', house: 'Ravenclaw', status: 'ACTIVE', allergies: 'None', emergency: '+1 555-888-7777' },
+      { id: 's3', name: 'Lucas Davis', email: 'lucas@sms.edu', roll: '1003', admission: 'ADM-10047', class: 'Grade 11-B', house: 'Slytherin', status: 'ACTIVE', allergies: 'Penicillin', emergency: '+1 555-777-6666' },
+      { id: 's4', name: 'Emma Watson', email: 'emma@sms.edu', roll: '1004', admission: 'ADM-10048', class: 'Grade 12-A', house: 'Hufflepuff', status: 'ACTIVE', allergies: 'Pollen', emergency: '+1 555-666-5555' },
+    ];
+
+    function App() {
+      const [currentRole, setCurrentRole] = useState('SUPER_ADMIN');
+      const [currentTab, setCurrentTab] = useState('dashboard');
+      const [isDark, setIsDark] = useState(true);
+      const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+      const [students, setStudents] = useState(INITIAL_STUDENTS);
+      const [search, setSearch] = useState('');
+      const [showAdmissionModal, setShowAdmissionModal] = useState(false);
+      const [viewStudent, setViewStudent] = useState(null);
+      const [showReportCard, setShowReportCard] = useState(null);
+      const [showInvoiceReceipt, setShowInvoiceReceipt] = useState(null);
+      const [notification, setNotification] = useState(null);
+
+      const chartRef1 = useRef(null);
+      const chartRef2 = useRef(null);
+
+      useEffect(() => {
+        if (currentTab === 'dashboard' && window.Chart) {
+          // Render Revenue Chart
+          const ctx1 = document.getElementById('revenueChart');
+          if (ctx1) {
+            if (chartRef1.current) chartRef1.current.destroy();
+            chartRef1.current = new Chart(ctx1, {
+              type: 'line',
+              data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                  label: 'Tuition Collected ($)',
+                  data: [14500, 18200, 16800, 21000, 24500, 22000],
+                  borderColor: '#6366f1',
+                  backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                  fill: true,
+                  tension: 0.4
+                }]
+              },
+              options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+          }
+
+          // Render Attendance Chart
+          const ctx2 = document.getElementById('attendanceChart');
+          if (ctx2) {
+            if (chartRef2.current) chartRef2.current.destroy();
+            chartRef2.current = new Chart(ctx2, {
+              type: 'bar',
+              data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                datasets: [{
+                  label: 'Attendance Rate (%)',
+                  data: [94, 96, 92, 95, 98],
+                  backgroundColor: '#10b981',
+                  borderRadius: 8
+                }]
+              },
+              options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+          }
+        }
+      }, [currentTab]);
+
+      const toggleTheme = () => {
+        setIsDark(!isDark);
+        document.documentElement.classList.toggle('dark');
+      };
+
+      const notify = (msg) => {
+        setNotification(msg);
+        setTimeout(() => setNotification(null), 3000);
+      };
+
+      return (
+        <div className={`flex min-h-screen ${isDark ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+          {/* Sidebar Navigation */}
+          <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col justify-between h-screen sticky top-0 z-30">
+            <div>
+              {/* Brand Header */}
+              <div className="h-16 flex items-center px-6 border-b border-gray-800 gap-3">
+                <span className="text-2xl">🏫</span>
+                <span className="font-extrabold text-lg text-white tracking-tight">Pathaibhara</span>
+              </div>
+
+              {/* Portal Role Indicator */}
+              <div className="px-4 py-3 mx-3 my-3 bg-indigo-950/50 rounded-xl border border-indigo-900/60 flex items-center gap-2">
+                <span className="text-indigo-400 text-sm">🛡️</span>
+                <div className="overflow-hidden">
+                  <p className="text-[10px] text-indigo-400 uppercase font-bold tracking-wider">Active Context</p>
+                  <p className="text-xs font-semibold text-gray-200 truncate">{currentRole.replace('_', ' ')}</p>
+                </div>
+              </div>
+
+              {/* Nav Items */}
+              <nav className="px-3 py-2 space-y-1">
+                {[
+                  { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
+                  { id: 'students', label: 'Students & Admissions', icon: '🎓' },
+                  { id: 'teachers', label: 'Faculty & Staff', icon: '👥' },
+                  { id: 'attendance', label: 'Daily Attendance', icon: '📅' },
+                  { id: 'exams', label: 'Exams & Grade Cards', icon: '📝' },
+                  { id: 'fees', label: 'Fees & Invoicing', icon: '💵' },
+                  { id: 'notices', label: 'Notice Board', icon: '🔔' },
+                  { id: 'reports', label: 'Reports Exporter', icon: '📈' },
+                  { id: 'settings', label: 'School Settings', icon: '⚙️' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setCurrentTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      currentTab === item.id
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    }`}
+                  >
+                    <span>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+            <div className="p-4 border-t border-gray-800 text-center">
+              <p className="text-[11px] text-gray-500 font-medium">v2.5.0 Production Ready</p>
+            </div>
+          </aside>
+
+          {/* Main Workspace Area */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Top Navbar */}
+            <header className="h-16 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-20 px-6 flex items-center justify-between">
+              <div className="relative w-80">
+                <input
+                  type="text"
+                  placeholder="Search student, roll no, teacher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-1.5 text-xs rounded-xl bg-gray-800 border-none text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500"
+                />
+                <span className="absolute left-3 top-2 text-xs text-gray-400">🔍</span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* Role Selector Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-950/80 border border-indigo-800 text-indigo-300 text-xs font-semibold hover:bg-indigo-900/60"
+                  >
+                    <span>✨ Switch Portal: {currentRole}</span>
+                    <span>▼</span>
+                  </button>
+
+                  {showRoleDropdown && (
+                    <div className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 py-2 z-50">
+                      <div className="px-3 py-1 border-b border-gray-700 text-[10px] uppercase font-bold text-gray-400">Select Role Context</div>
+                      <div className="max-h-60 overflow-y-auto">
+                        {ROLES.map((r) => (
+                          <button
+                            key={r.code}
+                            onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); }}
+                            className={`w-full text-left px-3.5 py-2 text-xs font-medium flex items-center justify-between hover:bg-gray-700 ${currentRole === r.code ? 'text-indigo-400 font-bold bg-gray-700/50' : 'text-gray-300'}`}
+                          >
+                            <span>{r.name}</span>
+                            {currentRole === r.code && <span>✓</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button onClick={toggleTheme} className="p-2 rounded-xl bg-gray-800 text-amber-400 hover:bg-gray-700" title="Toggle Theme">
+                  {isDark ? '☀️' : '🌙'}
+                </button>
+
+                <div className="flex items-center gap-3.5 pl-3 border-l border-gray-800">
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs">A</div>
+                  <div className="hidden md:block">
+                    <p className="text-xs font-bold text-gray-200">Alexander Vance</p>
+                    <p className="text-[10px] text-gray-400">superadmin@sms.edu</p>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            {/* Content Container */}
+            <main className="p-8 max-w-7xl w-full mx-auto space-y-6">
+              {notification && (
+                <div className="p-3.5 rounded-2xl bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                  <span>✅</span> {notification}
+                </div>
+              )}
+
+              {/* DASHBOARD TAB */}
+              {currentTab === 'dashboard' && (
+                <div className="space-y-6">
+                  <div className="p-6 rounded-3xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 text-white shadow-xl flex items-center justify-between">
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-bold">
+                        {currentRole.replace('_', ' ')} PORTAL
+                      </span>
+                      <h1 className="text-2xl font-extrabold mt-1">Welcome back, Alexander!</h1>
+                    </div>
+                    <button onClick={() => setCurrentTab('students')} className="px-4 py-2 bg-white text-indigo-700 font-bold text-xs rounded-xl shadow-md">
+                      + New Admission
+                    </button>
+                  </div>
+
+                  {/* Analytics Counter Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { title: 'Total Active Students', val: '1,284', desc: '+4.2% this term', icon: '🎓' },
+                      { title: 'Faculty Staff', val: '86', desc: 'Full-time Teachers', icon: '👥' },
+                      { title: 'Attendance Today', val: '96.4%', desc: '1,238 Present', icon: '📅' },
+                      { title: 'Fees Collected', val: '$245,000', desc: '92% Collection Rate', icon: '💵' },
+                    ].map((c, i) => (
+                      <div key={i} className="p-5 rounded-2xl bg-gray-900 border border-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between text-xs text-gray-400 font-medium">
+                          <span>{c.title}</span>
+                          <span className="text-lg">{c.icon}</span>
+                        </div>
+                        <h3 className="text-2xl font-extrabold text-white mt-2">{c.val}</h3>
+                        <p className="text-[11px] text-emerald-400 mt-1">{c.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Charts */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="p-6 rounded-2xl bg-gray-900 border border-gray-800 space-y-3">
+                      <h3 className="text-sm font-bold text-white">Monthly Fee Revenue ($)</h3>
+                      <div className="h-60 relative"><canvas id="revenueChart"></canvas></div>
+                    </div>
+                    <div className="p-6 rounded-2xl bg-gray-900 border border-gray-800 space-y-3">
+                      <h3 className="text-sm font-bold text-white">Weekly Attendance Rate (%)</h3>
+                      <div className="h-60 relative"><canvas id="attendanceChart"></canvas></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STUDENTS TAB */}
+              {currentTab === 'students' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-xl font-bold">Student Directory & Profiles</h2>
+                      <p className="text-xs text-gray-400">Manage student records, roll numbers & admissions</p>
+                    </div>
+                    <button onClick={() => setShowAdmissionModal(true)} className="px-4 py-2 bg-indigo-600 text-white font-semibold text-xs rounded-xl shadow-md">
+                      + New Admission
+                    </button>
+                  </div>
+
+                  <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                    <table className="w-full text-left text-xs text-gray-300">
+                      <thead className="bg-gray-800 text-gray-400 font-bold border-b border-gray-700">
+                        <tr>
+                          <th className="p-3.5">Student Info</th>
+                          <th className="p-3.5">Admission / Roll</th>
+                          <th className="p-3.5">Class</th>
+                          <th className="p-3.5">House</th>
+                          <th className="p-3.5">Medical Alert</th>
+                          <th className="p-3.5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {students.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).map(s => (
+                          <tr key={s.id} className="hover:bg-gray-800/50">
+                            <td className="p-3.5 font-bold text-white">{s.name} <br/><span className="text-[10px] text-gray-500 font-normal">{s.email}</span></td>
+                            <td className="p-3.5">{s.admission} <br/><span className="text-[10px] text-gray-400">Roll: {s.roll}</span></td>
+                            <td className="p-3.5 font-semibold text-indigo-400">{s.class}</td>
+                            <td className="p-3.5"><span className="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 text-[10px] font-bold">{s.house}</span></td>
+                            <td className="p-3.5 text-rose-400 font-semibold">{s.allergies !== 'None' ? `⚠️ ${s.allergies}` : 'None'}</td>
+                            <td className="p-3.5 text-right">
+                              <button onClick={() => setViewStudent(s)} className="px-3 py-1 bg-indigo-950 text-indigo-300 rounded-lg text-xs font-semibold hover:bg-indigo-900">View Profile</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* EXAMS TAB */}
+              {currentTab === 'exams' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-xl font-bold">Examinations & Marksheet Entry</h2>
+                      <p className="text-xs text-gray-400">Auto-calculate grades & GPA, generate report cards</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                    <table className="w-full text-left text-xs text-gray-300">
+                      <thead className="bg-gray-800 text-gray-400 font-bold">
+                        <tr><th className="p-3">Student</th><th className="p-3">Marks (100)</th><th className="p-3">Grade</th><th className="p-3">GPA</th><th className="p-3 text-right">Report Card</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {students.map(s => (
+                          <tr key={s.id}>
+                            <td className="p-3.5 font-bold text-white">{s.name}</td>
+                            <td className="p-3.5 font-semibold text-indigo-400">92.5</td>
+                            <td className="p-3.5"><span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 font-bold rounded">A+</span></td>
+                            <td className="p-3.5 font-bold">4.0</td>
+                            <td className="p-3.5 text-right">
+                              <button onClick={() => setShowReportCard(s)} className="px-3 py-1 bg-indigo-600 text-white font-semibold rounded-lg">Print Report Card</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* FEES TAB */}
+              {currentTab === 'fees' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-xl font-bold">Fee Invoicing & Dues</h2>
+                      <p className="text-xs text-gray-400">Issue tuition invoices & record cash payments</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                    <table className="w-full text-left text-xs text-gray-300">
+                      <thead className="bg-gray-800 text-gray-400 font-bold">
+                        <tr><th className="p-3">Invoice No</th><th className="p-3">Student</th><th className="p-3">Net Amount</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        <tr>
+                          <td className="p-3.5 font-bold text-white">INV-2026-0098</td>
+                          <td className="p-3.5 font-bold">Ethan Hunt</td>
+                          <td className="p-3.5 text-emerald-400 font-extrabold">$1,100.00</td>
+                          <td className="p-3.5"><span className="px-2 py-0.5 bg-rose-950 text-rose-300 text-[10px] font-bold rounded">UNPAID</span></td>
+                          <td className="p-3.5 text-right space-x-2">
+                            <button onClick={() => notify('Cash Payment Recorded!')} className="px-3 py-1 bg-emerald-600 text-white rounded-lg font-semibold">Record Payment</button>
+                            <button onClick={() => setShowInvoiceReceipt(true)} className="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg font-semibold">Print Receipt</button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* REPORTS TAB */}
+              {currentTab === 'reports' && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-bold">Institutional Reports & Data Exporter</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {['Student Admissions Summary', 'Monthly Attendance Log', 'Fee Collection Defaulters'].map((r, i) => (
+                      <div key={i} className="p-5 bg-gray-900 border border-gray-800 rounded-2xl space-y-3">
+                        <h3 className="font-bold text-sm text-white">{r}</h3>
+                        <div className="flex gap-2">
+                          <button onClick={() => notify(`Downloaded ${r} (PDF)`)} className="w-1/2 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold">Download PDF</button>
+                          <button onClick={() => notify(`Downloaded ${r} (CSV)`)} className="w-1/2 py-2 bg-gray-800 text-gray-300 rounded-xl text-xs font-semibold">Download CSV</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </main>
+          </div>
+
+          {/* Admission Modal */}
+          {showAdmissionModal && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+              <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 max-w-md w-full space-y-4">
+                <h3 className="text-base font-bold text-white">Student Admission Form</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const name = e.target.name.value;
+                  const newS = { id: 's-' + Date.now(), name, email: name.toLowerCase().replace(' ', '') + '@sms.edu', roll: '1005', admission: 'ADM-10049', class: 'Grade 10-A', house: 'Gryffindor', status: 'ACTIVE', allergies: 'None', emergency: '+1 555-000-0000' };
+                  setStudents([newS, ...students]);
+                  setShowAdmissionModal(false);
+                  notify('Student Admitted Successfully!');
+                }} className="space-y-3 text-xs">
+                  <input name="name" type="text" placeholder="Student Full Name" required className="w-full p-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white" />
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button type="button" onClick={() => setShowAdmissionModal(false)} className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl">Cancel</button>
+                    <button type="submit" className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl">Submit</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Profile Modal */}
+          {viewStudent && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+              <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 max-w-lg w-full text-xs space-y-4">
+                <div className="flex justify-between items-center pb-2 border-b border-gray-800">
+                  <h3 className="text-base font-bold text-white">{viewStudent.name} Profile</h3>
+                  <button onClick={() => setViewStudent(null)} className="text-gray-400">✕</button>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-gray-800/50 rounded-xl"><p className="text-gray-400">Admission No</p><p className="font-bold text-white">{viewStudent.admission}</p></div>
+                  <div className="p-3 bg-gray-800/50 rounded-xl"><p className="text-gray-400">Roll No</p><p className="font-bold text-white">{viewStudent.roll}</p></div>
+                  <div className="p-3 bg-gray-800/50 rounded-xl"><p className="text-gray-400">House</p><p className="font-bold text-indigo-400">{viewStudent.house}</p></div>
+                  <div className="p-3 bg-gray-800/50 rounded-xl"><p className="text-gray-400">Emergency Phone</p><p className="font-bold text-rose-400">{viewStudent.emergency}</p></div>
+                </div>
+                <button onClick={() => setViewStudent(null)} className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-xl">Close</button>
+              </div>
+            </div>
+          )}
+
+          {/* Report Card Modal */}
+          {showReportCard && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+              <div className="bg-white text-gray-900 rounded-3xl p-6 max-w-md w-full text-xs space-y-4">
+                <div className="text-center border-b pb-3">
+                  <h3 className="font-bold text-lg text-indigo-900">Pathaibhara</h3>
+                </div>
+                <div className="space-y-1">
+                  <p><strong>Roll No:</strong> {showReportCard.roll} • <strong>Class:</strong> {showReportCard.class}</p>
+                  <p><strong>Overall GPA:</strong> <span className="text-indigo-600 font-extrabold">3.92 / 4.0</span></p>
+                </div>
+                <button onClick={() => setShowReportCard(null)} className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-xl">Close & Print</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

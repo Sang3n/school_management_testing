@@ -1,0 +1,22 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# builds
+dist
+.next
+out
+build
+
+# environment
+.env
+.env.local
+.env.production
+
+# logs
+*.log
+npm-debug.log*
+
+# system
+.DS_Store
+Thumbs.db
