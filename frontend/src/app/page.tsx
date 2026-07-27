@@ -20,7 +20,7 @@ const DEMO_ROLES: { role: UserRole; title: string; desc: string; color: string }
 ];
 
 export default function LoginPage() {
-  const router = Router();
+  const router = useRouter();
   const { loginAsRole } = useAuth();
   const [email, setEmail] = useState('superadmin@sms.edu');
   const [password, setPassword] = useState('password123');
@@ -48,7 +48,9 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-500/30 mb-2">
             <School className="w-8 h-8 text-white" />
           </div>
-
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+            Pathaibhara
+          </h1>
           <p className="text-sm text-slate-400 max-w-xl mx-auto">
             Enterprise-grade SaaS platform for schools, colleges & educational institutions.
           </p>
