@@ -30,6 +30,10 @@ app.use('/api/v1', apiRouter);
 // Global Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  logger.info(`🚀 SMS Backend API Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    logger.info(`🚀 SMS Backend API Server running on port ${PORT}`);
+  });
+}
+
+export default app;
