@@ -21,7 +21,7 @@ import { StudentProfileView } from './StudentProfileView';
 
 export function StudentList() {
   const { currentRole } = useAuth();
-  const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
+
 
   const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS as any);
   const [search, setSearch] = useState('');
