@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pathaibhara - Principal & Executive Portal</title>
+  <title>Pathaibhara - Principal & Multi-Role Executive Portal</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -39,15 +39,6 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9999px; }
     .dark ::-webkit-scrollbar-thumb { background: #334155; }
-    @keyframes ticker {
-      0% { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
-    }
-    .animate-ticker {
-      display: inline-block;
-      white-space: nowrap;
-      animation: ticker 25s linear infinite;
-    }
   </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200">
@@ -89,12 +80,6 @@
       { id: 's4', name: 'Emma Watson', email: 'emma@sms.edu', roll: '1004', admission: 'ADM-10048', class: 'Class 8-A', house: 'Yellow House', status: 'ACTIVE', allergies: 'Pollen', emergency: '+1 555-666-5555' },
     ];
 
-    const INITIAL_INVOICES = [
-      { id: 'INV-2026-001', studentName: 'Ethan Hunt', studentId: 'STU-10045', class: 'Class 10-A', category: 'Tuition & Lab Fee', amount: '$450', status: 'PAID', dueDate: '2026-08-10', method: 'Online Transfer' },
-      { id: 'INV-2026-002', studentName: 'Sophia Miller', studentId: 'STU-10046', class: 'Class 10-A', category: 'Monthly Fee', amount: '$250', status: 'UNPAID', dueDate: '2026-08-05', method: 'Pending' },
-      { id: 'INV-2026-003', studentName: 'Lucas Davis', studentId: 'STU-10047', class: 'Class 9-B', category: 'Transport & Hostel', amount: '$600', status: 'OVERDUE', dueDate: '2026-07-28', method: 'Pending' },
-    ];
-
     function App() {
       const [currentRole, setCurrentRole] = useState('PRINCIPAL'); // Default to Principal Dashboard
       const [currentTab, setCurrentTab] = useState('dashboard');
@@ -102,7 +87,6 @@
       const [isDark, setIsDark] = useState(false);
       const [showRoleDropdown, setShowRoleDropdown] = useState(false);
       const [students, setStudents] = useState(INITIAL_STUDENTS);
-      const [invoices, setInvoices] = useState(INITIAL_INVOICES);
       const [search, setSearch] = useState('');
       const [showAdmissionModal, setShowAdmissionModal] = useState(false);
       const [viewStudent, setViewStudent] = useState(null);
@@ -133,9 +117,7 @@
 
       const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.PRINCIPAL;
 
-      // ROLE PERMISSION CHECKS
       const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'].includes(currentRole);
-      const IS_ACCOUNTANT = currentRole === 'ACCOUNTANT';
       const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
 
       // SPECIFIC PRINCIPAL RECOMMENDED SIDEBAR
@@ -260,326 +242,324 @@
       };
 
       return (
-        <div className="flex flex-col min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+        <div className="flex min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
           
+          {/* RECOMMENDED PRINCIPAL SIDEBAR */}
+          <aside className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between h-screen sticky top-0 z-30 transition-all duration-300 shadow-sm`}>
+            <div>
+              <div 
+                onClick={() => setCurrentTab('dashboard')} 
+                className="h-16 flex items-center px-5 border-b border-slate-200 dark:border-slate-800 gap-3 cursor-pointer hover:opacity-85 transition-opacity"
+              >
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md font-extrabold text-lg shrink-0">
+                  🏫
+                </div>
+                {!sidebarCollapsed && (
+                  <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
+                    <span className="text-purple-600 dark:text-purple-400">Pathaibhara</span>
+                  </span>
+                )}
+              </div>
 
-            {/* RECOMMENDED PRINCIPAL SIDEBAR */}
-            <aside className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between sticky top-0 z-30 transition-all duration-300 shadow-sm`}>
-              <div>
-                <div 
-                  onClick={() => setCurrentTab('dashboard')} 
-                  className="h-16 flex items-center px-5 border-b border-slate-200 dark:border-slate-800 gap-3 cursor-pointer hover:opacity-85 transition-opacity"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md font-extrabold text-lg shrink-0">
-                    🏫
+              {!sidebarCollapsed && (
+                <div className="px-4 py-3 mx-3 my-3 bg-purple-50 dark:bg-purple-950/50 rounded-2xl border border-purple-200 dark:border-purple-900/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <span className="text-purple-600 dark:text-purple-400 text-sm shrink-0">🎓</span>
+                    <div className="overflow-hidden">
+                      <p className="text-[10px] text-purple-600 dark:text-purple-400 uppercase font-bold tracking-wider">Active Context</p>
+                      <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate">{currentRole.replace('_', ' ')}</p>
+                    </div>
                   </div>
-                  {!sidebarCollapsed && (
-                    <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
-                      <span className="text-purple-600 dark:text-purple-400">Pathaibhara</span>
-                    </span>
+                </div>
+              )}
+
+              <nav className="px-3 py-2 space-y-1.5 max-h-[calc(100vh-190px)] overflow-y-auto">
+                {PRINCIPAL_SIDEBAR.map((item, idx) => {
+                  if (item.subItems) {
+                    const isOpen = openSidebarCategory[item.group];
+                    return (
+                      <div key={idx} className="space-y-1">
+                        <button
+                          onClick={() => setOpenSidebarCategory({ ...openSidebarCategory, [item.group]: !isOpen })}
+                          className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span>{item.icon}</span>
+                            {!sidebarCollapsed && <span>{item.group}</span>}
+                          </div>
+                          {!sidebarCollapsed && <span>{isOpen ? '▾' : '▸'}</span>}
+                        </button>
+                        {isOpen && !sidebarCollapsed && (
+                          <div className="pl-8 space-y-1 border-l-2 border-slate-200 dark:border-slate-800 ml-4">
+                            {item.subItems.map((sub) => (
+                              <button
+                                key={sub.id}
+                                onClick={() => setCurrentTab(sub.id)}
+                                className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                                  currentTab === sub.id ? 'bg-purple-600 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                }`}
+                              >
+                                • {sub.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setCurrentTab(item.id)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        currentTab === item.id ? 'bg-slate-700 dark:bg-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <span>{item.icon}</span>
+                      {!sidebarCollapsed && <span>{item.label}</span>}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 Principal Edition</p>}
+              <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
+                {sidebarCollapsed ? '➔' : '◀'}
+              </button>
+            </div>
+          </aside>
+
+          {/* MAIN WORKSPACE AREA */}
+          <div className="flex-1 flex flex-col min-w-0">
+            
+            <header className="h-16 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950 flex items-center justify-center font-bold text-purple-700 text-sm">🎓</div>
+                  <h1 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight capitalize">
+                    Principal Executive Operations Dashboard
+                  </h1>
+                </div>
+
+                <select 
+                  value={academicYear} 
+                  onChange={(e) => setAcademicYear(e.target.value)}
+                  className="px-3 py-1 text-xs rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-extrabold border border-purple-200"
+                >
+                  <option value="2025-2026">Academic Year: 2025-2026</option>
+                  <option value="2026-2027">Academic Year: 2026-2027</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* Switch Role Dropdown */}
+                <div className="relative">
+                  <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-xs font-bold">
+                    <span>✨ Switch Role: {currentRole}</span>
+                    <span>▼</span>
+                  </button>
+                  {showRoleDropdown && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50">
+                      {ROLES.map((r) => (
+                        <button key={r.code} onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); }} className="w-full text-left px-3.5 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700">
+                          {r.name}
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
 
-                {!sidebarCollapsed && (
-                  <div className="px-4 py-3 mx-3 my-3 bg-purple-50 dark:bg-purple-950/50 rounded-2xl border border-purple-200 dark:border-purple-900/60 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 overflow-hidden">
-                      <span className="text-purple-600 dark:text-purple-400 text-sm shrink-0">🎓</span>
-                      <div className="overflow-hidden">
-                        <p className="text-[10px] text-purple-600 dark:text-purple-400 uppercase font-bold tracking-wider">Active Context</p>
-                        <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate">{currentRole.replace('_', ' ')}</p>
+                <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-500">
+                  {isDark ? '☀️ Light' : '🌙 Dark'}
+                </button>
+
+                <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
+                  <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-xs text-white">
+                    {currentUser.avatar}
+                  </div>
+                  <div className="hidden md:block">
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{currentUser.name}</p>
+                    <p className="text-[10px] text-slate-400">{currentUser.email}</p>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <main className="p-8 max-w-7xl w-full mx-auto space-y-8">
+              {notification && (
+                <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950 border border-purple-200 text-purple-800 text-xs font-bold flex items-center gap-2">
+                  <span>ℹ️</span> {notification}
+                </div>
+              )}
+
+              {currentTab === 'dashboard' && (
+                <div className="space-y-8">
+                  
+                  {/* 10 PRINCIPAL OVERVIEW CARDS */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Principal Executive Overview Cards</h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-extrabold">
+                        🎓 Highest Academic Authority Scope
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+                      {[
+                        { title: 'Total Students', val: '1,284', icon: '👨‍🎓' },
+                        { title: 'Total Teachers', val: '86', icon: '👨‍🏫' },
+                        { title: 'Total Classes', val: '12', icon: '🏫' },
+                        { title: 'Attendance Today', val: '96.4%', icon: '📅' },
+                        { title: 'Upcoming Exams', val: '3', icon: '📝' },
+                        { title: 'Student Performance', val: '88.5%', icon: '📊' },
+                        { title: 'Fee Collection Summary', val: '$64,000', icon: '💰' },
+                        { title: 'Active Notices', val: '5', icon: '📢' },
+                        { title: 'Today\'s Birthdays', val: '2', icon: '🎂' },
+                        { title: 'Discipline Cases', val: '2 Active', icon: '🚨' },
+                      ].map((c, i) => (
+                        <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
+                          <div className="flex justify-between text-[10px] text-slate-400">
+                            <span className="truncate">{c.title}</span>
+                            <span>{c.icon}</span>
+                          </div>
+                          <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{c.val}</h3>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 8 PRINCIPAL QUICK ACTIONS BAR */}
+                  <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Principal Executive Quick Actions</h3>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">➕ Admit New Student</button>
+                      <button onClick={() => notify('Class Teacher Assigned!')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">👨‍🏫 Assign Class Teacher</button>
+                      <button onClick={() => notify('Approved Faculty Leave Request!')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">✅ Approve Leave Request</button>
+                      <button onClick={() => notify('Exam Schedule Published!')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">📅 Create Exam Schedule</button>
+                      <button onClick={() => notify('Q3 Marks & Results Published!')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">📝 Publish Results</button>
+                      <button onClick={() => notify('Publishing Notice to Parent Portal...')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200">📢 Publish Notice</button>
+                      <button onClick={() => notify('Opening Performance Analytics...')} className="px-3.5 py-1.5 rounded-xl bg-cyan-50 text-cyan-700 text-xs font-bold border border-cyan-200">📊 View School Performance</button>
+                      <button onClick={() => notify('Exporting Comprehensive Institutional Reports...')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300">📄 Generate Reports</button>
+                    </div>
+                  </div>
+
+                  {/* ACADEMIC PERFORMANCE & DISCIPLINE PANELS */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>📊</span> School Academic Performance Analytics
+                        </h3>
+                      </div>
+                      <div className="h-56 relative"><canvas id="principalPerformanceChart"></canvas></div>
+                    </div>
+
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>🚨</span> Active Discipline & Counseling Cases
+                        </h3>
+                        <button onClick={() => notify('New Incident Logged')} className="text-xs font-bold text-rose-600 hover:underline">+ File Incident</button>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 flex justify-between items-center">
+                          <div><p className="font-bold text-rose-900 dark:text-rose-200">Lucas Davis (Grade 11-B)</p><p className="text-rose-700 dark:text-rose-300">Unexcused Absence & Behavioral Incident</p></div>
+                          <button onClick={() => notify('Discipline Warning Issued')} className="px-3 py-1 bg-rose-600 text-white rounded-lg font-bold">Issue Warning</button>
+                        </div>
+                        <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 flex justify-between items-center">
+                          <div><p className="font-bold text-amber-900 dark:text-amber-200">Ethan Hunt (Grade 10-A)</p><p className="text-amber-700 dark:text-amber-300">Late Submission Warning</p></div>
+                          <button onClick={() => notify('Counseling Session Scheduled')} className="px-3 py-1 bg-amber-600 text-white rounded-lg font-bold">Schedule Counseling</button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                )}
 
-                <nav className="px-3 py-2 space-y-1.5 max-h-[calc(100vh-190px)] overflow-y-auto">
-                  {PRINCIPAL_SIDEBAR.map((item, idx) => {
-                    if (item.subItems) {
-                      const isOpen = openSidebarCategory[item.group];
-                      return (
-                        <div key={idx} className="space-y-1">
-                          <button
-                            onClick={() => setOpenSidebarCategory({ ...openSidebarCategory, [item.group]: !isOpen })}
-                            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span>{item.icon}</span>
-                              {!sidebarCollapsed && <span>{item.group}</span>}
-                            </div>
-                            {!sidebarCollapsed && <span>{isOpen ? '▾' : '▸'}</span>}
-                          </button>
-                          {isOpen && !sidebarCollapsed && (
-                            <div className="pl-8 space-y-1 border-l-2 border-slate-200 dark:border-slate-800 ml-4">
-                              {item.subItems.map((sub) => (
-                                <button
-                                  key={sub.id}
-                                  onClick={() => setCurrentTab(sub.id)}
-                                  className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                                    currentTab === sub.id ? 'bg-purple-600 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-                                  }`}
-                                >
-                                  • {sub.label}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setCurrentTab(item.id)}
-                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                          currentTab === item.id ? 'bg-slate-700 dark:bg-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span>{item.icon}</span>
-                        {!sidebarCollapsed && <span>{item.label}</span>}
-                      </button>
-                    );
-                  })}
-                </nav>
-              </div>
+                  {/* PRINCIPAL VS SUPER ADMIN SEPARATION PERMISSIONS MATRIX */}
+                  <div className="p-6 bg-slate-900 text-white rounded-3xl space-y-4 shadow-xl border border-slate-800">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-extrabold flex items-center gap-2 text-purple-400">
+                        <span>🛡️</span> Principal vs Super Admin Separation Policy Matrix
+                      </h3>
+                      <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-extrabold border border-purple-500/30">
+                        Academic Governance Active
+                      </span>
+                    </div>
 
-              <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 Principal Edition</p>}
-                <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
-                  {sidebarCollapsed ? '➔' : '◀'}
-                </button>
-              </div>
-            </aside>
-
-            {/* MAIN WORKSPACE AREA */}
-            <div className="flex-1 flex flex-col min-w-0">
-              
-              <header className="h-16 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950 flex items-center justify-center font-bold text-purple-700 text-sm">🎓</div>
-                    <h1 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight capitalize">
-                      Principal Executive Operations Dashboard
-                    </h1>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
+                        <p className="font-extrabold text-emerald-400">✅ Principal Operational & Academic Scope:</p>
+                        <p className="text-slate-300">• Admit Students, Approve Transfers, Promotions & Graduations</p>
+                        <p className="text-slate-300">• Assign Class Teachers & Subjects, Approve Faculty Leave</p>
+                        <p className="text-slate-300">• Academic Years, Classes, Timetables & Lesson Plans</p>
+                        <p className="text-slate-300">• Exam Schedules, Marks Review, Publish Results & Report Cards</p>
+                        <p className="text-slate-300">• View-Only Fee Summaries & Export Reports (PDF/Excel/CSV)</p>
+                      </div>
+                      <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
+                        <p className="font-extrabold text-rose-400">🔒 Restricted Technical & System Administration:</p>
+                        <p className="text-slate-400">• Cannot Create or Delete User Roles & Permissions</p>
+                        <p className="text-slate-400">• Cannot Access System Database Backups or API Integrations</p>
+                        <p className="text-slate-400">• Cannot Manage Financial Payroll (Reserved for Accountant)</p>
+                        <p className="text-slate-400">• Cannot Permanently Delete Critical Records or Super Admins</p>
+                      </div>
+                    </div>
                   </div>
 
-                  <select 
-                    value={academicYear} 
-                    onChange={(e) => setAcademicYear(e.target.value)}
-                    className="px-3 py-1 text-xs rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-extrabold border border-purple-200"
-                  >
-                    <option value="2025-2026">Academic Year: 2025-2026</option>
-                    <option value="2026-2027">Academic Year: 2026-2027</option>
-                  </select>
                 </div>
+              )}
 
-                <div className="flex items-center gap-3">
-                  {/* Switch Role Dropdown */}
-                  <div className="relative">
-                    <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-xs font-bold">
-                      <span>✨ Switch Role: {currentRole}</span>
-                      <span>▼</span>
-                    </button>
-                    {showRoleDropdown && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50">
-                        {ROLES.map((r) => (
-                          <button key={r.code} onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); }} className="w-full text-left px-3.5 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700">
-                            {r.name}
-                          </button>
-                        ))}
-                      </div>
+              {/* STUDENTS DIRECTORY TAB */}
+              {currentTab === 'students' && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Students & Admissions Directory</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Principal Academic Enrollment & Student Records</p>
+                    </div>
+
+                    {CAN_ADMIT_STUDENTS && (
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2">
+                        <span>➕</span> + Admit New Student (Principal Form)
+                      </button>
                     )}
                   </div>
 
-                  <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-500">
-                    {isDark ? '☀️ Light' : '🌙 Dark'}
-                  </button>
-
-                  <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
-                    <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-xs text-white">
-                      {currentUser.avatar}
-                    </div>
-                    <div className="hidden md:block">
-                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{currentUser.name}</p>
-                      <p className="text-[10px] text-slate-400">{currentUser.email}</p>
-                    </div>
-                  </div>
-                </div>
-              </header>
-
-              <main className="p-8 max-w-7xl w-full mx-auto space-y-8">
-                {notification && (
-                  <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950 border border-purple-200 text-purple-800 text-xs font-bold flex items-center gap-2">
-                    <span>ℹ️</span> {notification}
-                  </div>
-                )}
-
-                {currentTab === 'dashboard' && (
-                  <div className="space-y-8">
-                    
-                    {/* 10 PRINCIPAL OVERVIEW CARDS */}
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Principal Executive Overview Cards</h2>
-                        <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-extrabold">
-                          🎓 Highest Academic Authority Scope
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
-                        {[
-                          { title: 'Total Students', val: '1,284', icon: '👨‍🎓' },
-                          { title: 'Total Teachers', val: '86', icon: '👨‍🏫' },
-                          { title: 'Total Classes', val: '12', icon: '🏫' },
-                          { title: 'Attendance Today', val: '96.4%', icon: '📅' },
-                          { title: 'Upcoming Exams', val: '3', icon: '📝' },
-                          { title: 'Student Performance', val: '88.5%', icon: '📊' },
-                          { title: 'Fee Collection Summary', val: '$64,000', icon: '💰' },
-                          { title: 'Active Notices', val: '5', icon: '📢' },
-                          { title: 'Today\'s Birthdays', val: '2', icon: '🎂' },
-                          { title: 'Discipline Cases', val: '2 Active', icon: '🚨' },
-                        ].map((c, i) => (
-                          <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
-                            <div className="flex justify-between text-[10px] text-slate-400">
-                              <span className="truncate">{c.title}</span>
-                              <span>{c.icon}</span>
-                            </div>
-                            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{c.val}</h3>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 8 PRINCIPAL QUICK ACTIONS BAR */}
-                    <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
-                      <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Principal Executive Quick Actions</h3>
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">➕ Admit New Student</button>
-                        <button onClick={() => notify('Class Teacher Assigned!')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">👨‍🏫 Assign Class Teacher</button>
-                        <button onClick={() => notify('Approved Faculty Leave Request!')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">✅ Approve Leave Request</button>
-                        <button onClick={() => notify('Exam Schedule Published!')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">📅 Create Exam Schedule</button>
-                        <button onClick={() => notify('Q3 Marks & Results Published!')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">📝 Publish Results</button>
-                        <button onClick={() => notify('Publishing Notice to Parent Portal...')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200">📢 Publish Notice</button>
-                        <button onClick={() => notify('Opening Performance Analytics...')} className="px-3.5 py-1.5 rounded-xl bg-cyan-50 text-cyan-700 text-xs font-bold border border-cyan-200">📊 View School Performance</button>
-                        <button onClick={() => notify('Exporting Comprehensive Institutional Reports...')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300">📄 Generate Reports</button>
-                      </div>
-                    </div>
-
-                    {/* ACADEMIC PERFORMANCE & DISCIPLINE PANELS */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span>📊</span> School Academic Performance Analytics
-                          </h3>
-                        </div>
-                        <div className="h-56 relative"><canvas id="principalPerformanceChart"></canvas></div>
-                      </div>
-
-                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span>🚨</span> Active Discipline & Counseling Cases
-                          </h3>
-                          <button onClick={() => notify('New Incident Logged')} className="text-xs font-bold text-rose-600 hover:underline">+ File Incident</button>
-                        </div>
-                        <div className="space-y-3 text-xs">
-                          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 flex justify-between items-center">
-                            <div><p className="font-bold text-rose-900 dark:text-rose-200">Lucas Davis (Grade 11-B)</p><p className="text-rose-700 dark:text-rose-300">Unexcused Absence & Behavioral Incident</p></div>
-                            <button onClick={() => notify('Discipline Warning Issued')} className="px-3 py-1 bg-rose-600 text-white rounded-lg font-bold">Issue Warning</button>
-                          </div>
-                          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 flex justify-between items-center">
-                            <div><p className="font-bold text-amber-900 dark:text-amber-200">Ethan Hunt (Grade 10-A)</p><p className="text-amber-700 dark:text-amber-300">Late Submission Warning</p></div>
-                            <button onClick={() => notify('Counseling Session Scheduled')} className="px-3 py-1 bg-amber-600 text-white rounded-lg font-bold">Schedule Counseling</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* PRINCIPAL VS SUPER ADMIN SEPARATION PERMISSIONS MATRIX */}
-                    <div className="p-6 bg-slate-900 text-white rounded-3xl space-y-4 shadow-xl border border-slate-800">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-sm font-extrabold flex items-center gap-2 text-purple-400">
-                          <span>🛡️</span> Principal vs Super Admin Separation Policy Matrix
-                        </h3>
-                        <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-extrabold border border-purple-500/30">
-                          Academic Governance Active
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                        <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
-                          <p className="font-extrabold text-emerald-400">✅ Principal Operational & Academic Scope:</p>
-                          <p className="text-slate-300">• Admit Students, Approve Transfers, Promotions & Graduations</p>
-                          <p className="text-slate-300">• Assign Class Teachers & Subjects, Approve Faculty Leave</p>
-                          <p className="text-slate-300">• Academic Years, Classes, Timetables & Lesson Plans</p>
-                          <p className="text-slate-300">• Exam Schedules, Marks Review, Publish Results & Report Cards</p>
-                          <p className="text-slate-300">• View-Only Fee Summaries & Export Reports (PDF/Excel/CSV)</p>
-                        </div>
-                        <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
-                          <p className="font-extrabold text-rose-400">🔒 Restricted Technical & System Administration:</p>
-                          <p className="text-slate-400">• Cannot Create or Delete User Roles & Permissions</p>
-                          <p className="text-slate-400">• Cannot Access System Database Backups or API Integrations</p>
-                          <p className="text-slate-400">• Cannot Manage Financial Payroll (Reserved for Accountant)</p>
-                          <p className="text-slate-400">• Cannot Permanently Delete Critical Records or Super Admins</p>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                )}
-
-                {/* STUDENTS DIRECTORY TAB */}
-                {currentTab === 'students' && (
-                  <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div>
-                        <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Students & Admissions Directory</h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Principal Academic Enrollment & Student Records</p>
-                      </div>
-
-                      {CAN_ADMIT_STUDENTS && (
-                        <button onClick={() => setShowAdmissionModal(true)} className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2">
-                          <span>➕</span> + Admit New Student (Principal Form)
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
-                      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b">
-                          <tr>
-                            <th className="p-3.5">Student Name</th><th className="p-3.5">Admission / Roll</th><th className="p-3.5">Class / Section</th><th className="p-3.5">House</th><th className="p-3.5">Medical Alert</th><th className="p-3.5 text-right">Actions</th>
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
+                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                      <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b">
+                        <tr>
+                          <th className="p-3.5">Student Name</th><th className="p-3.5">Admission / Roll</th><th className="p-3.5">Class / Section</th><th className="p-3.5">House</th><th className="p-3.5">Medical Alert</th><th className="p-3.5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                        {students.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).map(s => (
+                          <tr key={s.id}>
+                            <td className="p-3.5 font-bold text-slate-900 dark:text-white">{s.name}<br/><span className="text-[10px] text-slate-400">{s.email}</span></td>
+                            <td className="p-3.5">{s.admission}<br/><span className="text-[10px] text-slate-400">Roll: {s.roll}</span></td>
+                            <td className="p-3.5 font-semibold text-purple-600">{s.class}</td>
+                            <td className="p-3.5"><span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">{s.house}</span></td>
+                            <td className="p-3.5 text-rose-600 font-semibold">{s.allergies !== 'None' ? `⚠️ ${s.allergies}` : 'None'}</td>
+                            <td className="p-3.5 text-right"><button onClick={() => setViewStudent(s)} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-semibold">View Profile</button></td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                          {students.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).map(s => (
-                            <tr key={s.id}>
-                              <td className="p-3.5 font-bold text-slate-900 dark:text-white">{s.name}<br/><span className="text-[10px] text-slate-400">{s.email}</span></td>
-                              <td className="p-3.5">{s.admission}<br/><span className="text-[10px] text-slate-400">Roll: {s.roll}</span></td>
-                              <td className="p-3.5 font-semibold text-purple-600">{s.class}</td>
-                              <td className="p-3.5"><span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">{s.house}</span></td>
-                              <td className="p-3.5 text-rose-600 font-semibold">{s.allergies !== 'None' ? `⚠️ ${s.allergies}` : 'None'}</td>
-                              <td className="p-3.5 text-right"><button onClick={() => setViewStudent(s)} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-semibold">View Profile</button></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                )}
-              </main>
-
-              {/* FOOTER STATISTICS */}
-              <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-8 py-3.5 flex flex-wrap items-center justify-between text-xs text-slate-500 font-semibold">
-                <div className="flex flex-wrap items-center gap-6">
-                  <span>👨‍🎓 Total Students: <strong className="text-slate-900 dark:text-white">1,284</strong></span>
-                  <span>👨‍🏫 Teachers: <strong className="text-slate-900 dark:text-white">86</strong></span>
-                  <span>✅ Attendance: <strong className="text-emerald-600">96.4%</strong></span>
-                  <span>💰 Fee Summary: <strong className="text-purple-600">$64,000 (View Only)</strong></span>
                 </div>
-                <p className="text-[11px] text-slate-400">Pathaibhara SMS © 2026</p>
-              </footer>
-            </div>
+              )}
+            </main>
+
+            {/* FOOTER STATISTICS */}
+            <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-8 py-3.5 flex flex-wrap items-center justify-between text-xs text-slate-500 font-semibold">
+              <div className="flex flex-wrap items-center gap-6">
+                <span>👨‍🎓 Total Students: <strong className="text-slate-900 dark:text-white">1,284</strong></span>
+                <span>👨‍🏫 Teachers: <strong className="text-slate-900 dark:text-white">86</strong></span>
+                <span>✅ Attendance: <strong className="text-emerald-600">96.4%</strong></span>
+                <span>💰 Fee Summary: <strong className="text-purple-600">$64,000 (View Only)</strong></span>
+              </div>
+              <p className="text-[11px] text-slate-400">Pathaibhara SMS © 2026</p>
+            </footer>
           </div>
 
           {/* 11-SECTION ADMISSION MODAL */}
