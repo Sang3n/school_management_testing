@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pathaibhara - Vice Principal & Executive Portal</title>
+  <title>Pathaibhara - Accountant & Financial Operations Portal</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -82,111 +82,71 @@
       { code: 'PARENT', name: 'Parent' },
     ];
 
-    const INITIAL_STUDENTS = [
-      { id: 's1', name: 'Ethan Hunt', email: 'ethan@sms.edu', roll: '1001', admission: 'ADM-10045', class: 'Class 10-A', house: 'Red House', status: 'ACTIVE', allergies: 'Peanuts', emergency: '+1 555-999-8888' },
-      { id: 's2', name: 'Sophia Miller', email: 'sophia@sms.edu', roll: '1002', admission: 'ADM-10046', class: 'Class 10-A', house: 'Green House', status: 'ACTIVE', allergies: 'None', emergency: '+1 555-888-7777' },
-      { id: 's3', name: 'Lucas Davis', email: 'lucas@sms.edu', roll: '1003', admission: 'ADM-10047', class: 'Class 9-B', house: 'Blue House', status: 'ACTIVE', allergies: 'Penicillin', emergency: '+1 555-777-6666' },
-      { id: 's4', name: 'Emma Watson', email: 'emma@sms.edu', roll: '1004', admission: 'ADM-10048', class: 'Class 8-A', house: 'Yellow House', status: 'ACTIVE', allergies: 'Pollen', emergency: '+1 555-666-5555' },
+    const INITIAL_INVOICES = [
+      { id: 'INV-2026-001', studentName: 'Ethan Hunt', studentId: 'STU-10045', class: 'Class 10-A', category: 'Tuition & Lab Fee', amount: '$450', status: 'PAID', dueDate: '2026-08-10', method: 'Online Transfer' },
+      { id: 'INV-2026-002', studentName: 'Sophia Miller', studentId: 'STU-10046', class: 'Class 10-A', category: 'Monthly Fee', amount: '$250', status: 'UNPAID', dueDate: '2026-08-05', method: 'Pending' },
+      { id: 'INV-2026-003', studentName: 'Lucas Davis', studentId: 'STU-10047', class: 'Class 9-B', category: 'Transport & Hostel', amount: '$600', status: 'OVERDUE', dueDate: '2026-07-28', method: 'Pending' },
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('VICE_PRINCIPAL'); // Default to Vice Principal Context
+      const [currentRole, setCurrentRole] = useState('ACCOUNTANT'); // Default to Accountant Dashboard
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
       const [showRoleDropdown, setShowRoleDropdown] = useState(false);
-      const [students, setStudents] = useState(INITIAL_STUDENTS);
+      const [invoices, setInvoices] = useState(INITIAL_INVOICES);
       const [search, setSearch] = useState('');
-      const [showAdmissionModal, setShowAdmissionModal] = useState(false);
-      const [viewStudent, setViewStudent] = useState(null);
       const [notification, setNotification] = useState(null);
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-      const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: true, Teachers: true, Academics: true, Examinations: true });
+      const [openSidebarCategory, setOpenSidebarCategory] = useState({ FeeCollection: true, FeeManagement: true, Invoices: true, Reports: true });
 
-      // Admission Form Multi-Step State (11 Sections)
-      const [admissionStep, setAdmissionStep] = useState(1);
-      const [studentForm, setStudentForm] = useState({
-        studentId: 'STU-2026-' + Math.floor(1000 + Math.random() * 9000),
-        admissionNo: 'ADM-2026-' + Math.floor(10000 + Math.random() * 90000),
-        rollNo: String(Math.floor(100 + Math.random() * 900)),
-        firstName: '', middleName: '', lastName: '', dob: '2010-06-12', gender: 'MALE', bloodGroup: 'O+', nationality: 'Nepali', religion: 'Hinduism', citizenshipNo: '', birthCertNo: '',
-        academicYear: '2025-2026', admissionDate: new Date().toISOString().split('T')[0], classCode: 'Class 10', section: 'A', faculty: 'Schooling', house: 'Red', shift: 'Day', previousSchool: 'Sunrise Sec. School', previousGrade: '3.85 GPA', studentStatus: 'ACTIVE',
-        mobileNumber: '+977 9801234567', email: '', currentAddress: 'Baneshwor-10, Kathmandu', permanentAddress: 'Dharan-05, Sunsari', district: 'Kathmandu', province: 'Bagmati Province', country: 'Nepal', postalCode: '44600',
-        fatherName: '', fatherMobile: '+977 9841000000', fatherEmail: '', fatherOccupation: 'Business', fatherCitizenshipNo: '12-01-75-09876', motherName: '', motherMobile: '+977 9841111111', motherEmail: '', motherOccupation: 'Educator', motherCitizenshipNo: '12-01-78-01234', guardianName: '', guardianRelation: 'Uncle', guardianMobile: '', guardianEmail: '', guardianAddress: '',
-        emergencyContactPerson: '', emergencyRelation: 'Father', emergencyPhone: '+977 9801234567', emergencyAltPhone: '+977 9841000000', emergencyAddress: 'Baneshwor-10, Kathmandu',
-        allergies: 'None', medicalConditions: 'None', disabilities: 'None', medications: 'None', doctorName: 'Dr. S. K. Sharma', hospitalName: 'Norvic Hospital', emergencyMedicalNotes: 'No chronic illness.',
-        usesTransport: 'Yes', route: 'Route #4 (Koteshwor - Baneshwor)', pickupPoint: 'Baneshwor Chowk', dropoffPoint: 'Baneshwor Chowk', busNumber: 'BA 3 KHA 4589', driverName: 'Ram Bahadur',
-        hostelRequired: 'No', hostelName: 'N/A', roomNumber: 'N/A', bedNumber: 'N/A', wardenName: 'N/A',
-        admissionFee: '$500', monthlyFeePlan: '$250 / Month', scholarship: '10% Merit Waiver', discount: '$50', paymentMethod: 'Direct Transfer', feeStatus: 'PAID',
-        studentPhotoUploaded: true, birthCertUploaded: true, citizenshipCertUploaded: false, transferCertUploaded: true, markSheetUploaded: true, characterCertUploaded: true, medicalCertUploaded: false, passportCopyUploaded: false, parentCitizenshipCopyUploaded: true,
-        username: '', tempPassword: 'SMS-' + Math.random().toString(36).slice(-8).toUpperCase(), sendCredentialsSMS: true,
-      });
+      const chartRefAccountant = useRef(null);
 
-      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.SUPER_ADMIN;
+      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.ACCOUNTANT;
 
-      // ROLE VISIBILITY RULE: Vice Principal Dashboard and Role context can be viewed by Super Admin, School Admin, Principal, and Vice Principal!
-      const IS_VICE_PRINCIPAL_ALLOWED = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
+      // ROLE VISIBILITY RULE: Accountant Portal is accessible to Super Admin, School Admin, Principal, Vice Principal, and Accountant!
+      const IS_ACCOUNTANT_ALLOWED = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
 
-      // Super Executive (Super Admin, School Admin, Principal)
-      const IS_EXECUTIVE_ADMIN = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'].includes(currentRole);
+      // Student Admission permission rule (Accountant cannot admit students as per specification!)
+      const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
 
-      // Student Admission permission rule (Vice Principal has full admission rights!)
-      const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
-
-      // RECOMMENDED VICE PRINCIPAL SIDEBAR STRUCTURE
-      const VICE_PRINCIPAL_SIDEBAR = [
+      // RECOMMENDED ACCOUNTANT SIDEBAR STRUCTURE
+      const ACCOUNTANT_SIDEBAR = [
         { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
         {
-          group: 'Students', icon: '🎓', subItems: [
-            { id: 'students', label: 'All Students' },
-            { id: 'admissions', label: 'Admissions' },
-            { id: 'promotions', label: 'Promotions' },
-            { id: 'discipline', label: 'Discipline' },
+          group: 'Fee Collection', icon: '💰', subItems: [
+            { id: 'collect_fees', label: 'Collect Fees' },
+            { id: 'payment_history', label: 'Payment History' },
+            { id: 'pending_payments', label: 'Pending Payments' },
+            { id: 'overdue_payments', label: 'Overdue Payments' },
           ]
         },
         {
-          group: 'Teachers', icon: '👨‍🏫', subItems: [
-            { id: 'teachers', label: 'Teacher Directory' },
-            { id: 'teacher_attendance', label: 'Teacher Attendance' },
-            { id: 'teacher_timetable', label: 'Teacher Timetable' },
-            { id: 'teacher_performance', label: 'Performance Evaluation' },
+          group: 'Fee Management', icon: '⚙️', subItems: [
+            { id: 'categories', label: 'Fee Categories' },
+            { id: 'structure', label: 'Fee Structure' },
+            { id: 'discounts', label: 'Discounts' },
+            { id: 'scholarships', label: 'Scholarships' },
+            { id: 'fines', label: 'Fines & Late Charges' },
           ]
         },
         {
-          group: 'Academics', icon: '📚', subItems: [
-            { id: 'classes', label: 'Classes & Sections' },
-            { id: 'subjects', label: 'Subjects' },
-            { id: 'timetable', label: 'Timetable' },
+          group: 'Invoices', icon: '📄', subItems: [
+            { id: 'generate_invoice', label: 'Generate Invoice' },
+            { id: 'invoice_history', label: 'Invoice History' },
           ]
         },
-        { id: 'attendance', label: 'Student Attendance', icon: '✅' },
+        { id: 'refunds', label: 'Refund Requests', icon: '↩️' },
         {
-          group: 'Examinations', icon: '📝', subItems: [
-            { id: 'exams', label: 'Exam Schedule' },
-            { id: 'marks_review', label: 'Marks Review' },
-            { id: 'results', label: 'Results & Marksheets' },
+          group: 'Financial Reports', icon: '📈', subItems: [
+            { id: 'daily_report', label: 'Daily Collection' },
+            { id: 'monthly_revenue', label: 'Monthly Revenue' },
+            { id: 'outstanding_report', label: 'Outstanding Fees' },
+            { id: 'scholarship_report', label: 'Scholarship Report' },
           ]
         },
-        { id: 'assignments', label: 'Assignments Tracker', icon: '📚' },
-        { id: 'notices', label: 'Notice Board', icon: '📢' },
-        { id: 'reports', label: 'Academic Reports', icon: '📈' },
-        { id: 'calendar', label: 'School Calendar', icon: '📆' },
-        { id: 'messages', label: 'Parent Messages', icon: '💬' },
-        { id: 'profile', label: 'My Profile & 2FA', icon: '👤' },
-      ];
-
-      const ADMISSION_WIZARD_STEPS = [
-        { num: 1, label: 'Personal Info', icon: '👤' },
-        { num: 2, label: 'Academic Info', icon: '🎓' },
-        { num: 3, label: 'Contact Details', icon: '📞' },
-        { num: 4, label: 'Parent / Guardian', icon: '👨‍👩‍👧' },
-        { num: 5, label: 'Emergency Contact', icon: '🚨' },
-        { num: 6, label: 'Medical Info', icon: '🩺' },
-        { num: 7, label: 'Transport', icon: '🚌' },
-        { num: 8, label: 'Hostel', icon: '🏢' },
-        { num: 9, label: 'Fee & Payment', icon: '💵' },
-        { num: 10, label: 'Documents Upload', icon: '📁' },
-        { num: 11, label: 'Portal Account', icon: '🔐' },
+        { id: 'notifications', label: 'Payment Reminders', icon: '🔔' },
+        { id: 'profile', label: 'Accountant Profile & 2FA', icon: '👤' },
       ];
 
       useEffect(() => {
@@ -194,72 +154,72 @@
         else document.documentElement.classList.remove('dark');
       }, [isDark]);
 
+      // Initialize Financial Revenue Bar Chart
+      useEffect(() => {
+        if (currentTab === 'dashboard' && IS_ACCOUNTANT_ALLOWED && window.Chart) {
+          const ctxA = document.getElementById('accountantRevenueChart');
+          if (ctxA) {
+            if (chartRefAccountant.current) chartRefAccountant.current.destroy();
+            chartRefAccountant.current = new Chart(ctxA, {
+              type: 'bar',
+              data: {
+                labels: ['Tuition', 'Admission', 'Transport', 'Hostel', 'Exam', 'Misc'],
+                datasets: [
+                  { label: 'Collected Revenue ($)', data: [45000, 15000, 12000, 18000, 9500, 4200], backgroundColor: '#10b981', borderRadius: 8 },
+                  { label: 'Outstanding Dues ($)', data: [3200, 0, 1400, 2100, 800, 300], backgroundColor: '#f43f5e', borderRadius: 8 }
+                ]
+              },
+              options: { responsive: true, maintainAspectRatio: false }
+            });
+          }
+        }
+      }, [currentTab, currentRole, isDark]);
+
       const notify = (msg) => {
         setNotification(msg);
         setTimeout(() => setNotification(null), 3000);
       };
 
-      const handleAddStudentSubmit = (e) => {
-        e.preventDefault();
-        const fullName = `${studentForm.firstName} ${studentForm.middleName ? studentForm.middleName + ' ' : ''}${studentForm.lastName}`.trim() || 'New Student';
-        const newEntry = {
-          id: 's-' + Date.now(),
-          name: fullName,
-          email: studentForm.email || `${(studentForm.firstName || 'student').toLowerCase()}@sms.edu`,
-          roll: studentForm.rollNo,
-          admission: studentForm.admissionNo,
-          class: `${studentForm.classCode}-${studentForm.section}`,
-          house: `${studentForm.house} House`,
-          status: 'ACTIVE',
-          allergies: studentForm.allergies,
-          emergency: studentForm.emergencyPhone,
-        };
-        setStudents([newEntry, ...students]);
-        setShowAdmissionModal(false);
-        setAdmissionStep(1);
-        notify(`🎉 Student "${fullName}" Successfully Enrolled by Vice Principal!`);
-      };
-
       return (
         <div className="flex flex-col min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
           
-          {/* TOP ANNOUNCEMENT & WEATHER TICKER */}
-          <div className="bg-indigo-900 text-white text-xs px-6 py-1.5 flex items-center justify-between overflow-hidden shadow-inner">
+          {/* TOP FINANCIAL TICKER */}
+          <div className="bg-emerald-950 text-white text-xs px-6 py-1.5 flex items-center justify-between overflow-hidden shadow-inner border-b border-emerald-800">
             <div className="flex items-center gap-3 shrink-0">
-              <span className="font-extrabold bg-amber-500 text-slate-950 px-2 py-0.5 rounded uppercase tracking-wider text-[10px]">VICE PRINCIPAL PORTAL</span>
-              <span className="font-medium text-indigo-200">🌡️ Kathmandu: 24°C Sunny • Academic Operations & Supervision</span>
+              <span className="font-extrabold bg-emerald-500 text-slate-950 px-2 py-0.5 rounded uppercase tracking-wider text-[10px]">FINANCIAL OPERATIONS</span>
+              <span className="font-medium text-emerald-200">💵 Today's Fee Collection: $4,500 • Monthly Revenue: $64,000</span>
             </div>
             <div className="overflow-hidden w-1/2 relative hidden sm:block">
-              <span className="animate-ticker font-semibold text-indigo-100">
-                📢 Vice Principal Dashboard Active: Managing Academics, Teacher Supervision, Attendance & Student Discipline.
+              <span className="animate-ticker font-semibold text-emerald-100">
+                📢 Accountant Dashboard Active: Managing Fee Structures, Invoices, Receipts, Scholarships, Discounts & Payment Reminders.
               </span>
             </div>
           </div>
 
           <div className="flex flex-1 min-h-0">
-            {/* RECOMMENDED VICE PRINCIPAL SIDEBAR */}
+            {/* ACCOUNTANT SIDEBAR */}
             <aside className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between sticky top-0 z-30 transition-all duration-300 shadow-sm`}>
               <div>
                 <div 
                   onClick={() => setCurrentTab('dashboard')} 
                   className="h-16 flex items-center px-5 border-b border-slate-200 dark:border-slate-800 gap-3 cursor-pointer hover:opacity-85 transition-opacity"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-white shadow-md font-extrabold text-lg shrink-0">
-                    🏫
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center text-white shadow-md font-extrabold text-lg shrink-0">
+                    💵
                   </div>
                   {!sidebarCollapsed && (
                     <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
-                      <span className="text-amber-600 dark:text-amber-400">Pathaibhara</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">Pathaibhara</span>
                     </span>
                   )}
                 </div>
 
                 {!sidebarCollapsed && (
-                  <div className="px-4 py-3 mx-3 my-3 bg-amber-50 dark:bg-amber-950/50 rounded-2xl border border-amber-200 dark:border-amber-900/60 flex items-center justify-between">
+                  <div className="px-4 py-3 mx-3 my-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-2xl border border-emerald-200 dark:border-emerald-900/60 flex items-center justify-between">
                     <div className="flex items-center gap-2.5 overflow-hidden">
-                      <span className="text-amber-600 dark:text-amber-400 text-sm shrink-0">🛡️</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 text-sm shrink-0">💳</span>
                       <div className="overflow-hidden">
-                        <p className="text-[10px] text-amber-600 dark:text-amber-400 uppercase font-bold tracking-wider">Active Context</p>
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase font-bold tracking-wider">Active Context</p>
                         <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate">{currentRole.replace('_', ' ')}</p>
                       </div>
                     </div>
@@ -267,7 +227,7 @@
                 )}
 
                 <nav className="px-3 py-2 space-y-1.5 max-h-[calc(100vh-190px)] overflow-y-auto">
-                  {VICE_PRINCIPAL_SIDEBAR.map((item, idx) => {
+                  {ACCOUNTANT_SIDEBAR.map((item, idx) => {
                     if (item.subItems) {
                       const isOpen = openSidebarCategory[item.group];
                       return (
@@ -289,7 +249,7 @@
                                   key={sub.id}
                                   onClick={() => setCurrentTab(sub.id)}
                                   className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                                    currentTab === sub.id ? 'bg-amber-500 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                    currentTab === sub.id ? 'bg-emerald-600 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                                   }`}
                                 >
                                   • {sub.label}
@@ -305,7 +265,7 @@
                         key={item.id}
                         onClick={() => setCurrentTab(item.id)}
                         className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                          currentTab === item.id ? 'bg-slate-700 dark:bg-amber-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          currentTab === item.id ? 'bg-slate-700 dark:bg-emerald-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
                         <span>{item.icon}</span>
@@ -317,7 +277,7 @@
               </div>
 
               <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 VP Edition</p>}
+                {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 Finance Edition</p>}
                 <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
                   {sidebarCollapsed ? '➔' : '◀'}
                 </button>
@@ -330,27 +290,26 @@
               <header className="h-16 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950 flex items-center justify-center font-bold text-amber-700 text-sm">🎓</div>
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center font-bold text-emerald-700 text-sm">💵</div>
                     <h1 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight capitalize">
-                      Vice Principal Academic & Supervision Dashboard
+                      Accountant Financial Operations Portal
                     </h1>
                   </div>
 
                   <select 
                     value={academicYear} 
                     onChange={(e) => setAcademicYear(e.target.value)}
-                    className="px-3 py-1 text-xs rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-extrabold border border-amber-200"
+                    className="px-3 py-1 text-xs rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-extrabold border border-emerald-200"
                   >
-                    <option value="2025-2026">Academic Year: 2025-2026</option>
-                    <option value="2026-2027">Academic Year: 2026-2027</option>
+                    <option value="2025-2026">Financial Year: 2025-2026</option>
+                    <option value="2026-2027">Financial Year: 2026-2027</option>
                   </select>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* Switch Role Dropdown - Accessible to Super Admin, School Admin, Principal, Vice Principal */}
-                  {IS_VICE_PRINCIPAL_ALLOWED && (
+                  {IS_ACCOUNTANT_ALLOWED && (
                     <div className="relative">
-                      <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                      <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
                         <span>✨ Switch Role: {currentRole}</span>
                         <span>▼</span>
                       </button>
@@ -371,7 +330,7 @@
                   </button>
 
                   <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
-                    <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center font-bold text-xs text-white">
+                    <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-xs text-white">
                       {currentUser.avatar}
                     </div>
                     <div className="hidden md:block">
@@ -384,7 +343,7 @@
 
               <main className="p-8 max-w-7xl w-full mx-auto space-y-8">
                 {notification && (
-                  <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-2">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
                     <span>ℹ️</span> {notification}
                   </div>
                 )}
@@ -392,27 +351,27 @@
                 {currentTab === 'dashboard' && (
                   <div className="space-y-8">
                     
-                    {/* VICE PRINCIPAL 10 OVERVIEW CARDS */}
+                    {/* ACCOUNTANT 10 OVERVIEW CARDS */}
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Vice Principal Executive Overview Cards</h2>
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-extrabold">
-                          🛡️ Vice Principal Access (Academic & Supervision Management)
+                        <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Accountant Financial Overview Cards</h2>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold">
+                          💳 Financial Operations & Invoicing Scope Active
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
                         {[
-                          { title: 'Total Students', val: '1,284', icon: '👨‍🎓', color: 'indigo' },
-                          { title: 'Total Teachers', val: '86', icon: '👨‍🏫', color: 'blue' },
-                          { title: 'Classes Today', val: '12', icon: '🏫', color: 'purple' },
-                          { title: 'Attendance Today', val: '96.4%', icon: '✅', color: 'emerald' },
-                          { title: 'Pending Attendance', val: '3 Classes', icon: '⏳', color: 'amber' },
-                          { title: 'Upcoming Exams', val: '3', icon: '🧪', color: 'rose' },
-                          { title: 'Pending Assignments', val: '14', icon: '📝', color: 'cyan' },
-                          { title: 'Discipline Cases', val: '2 Active', icon: '⚖️', color: 'pink' },
-                          { title: 'New Admissions', val: '42', icon: '➕', color: 'teal' },
-                          { title: 'Notices', val: '5 Active', icon: '🔔', color: 'violet' },
+                          { title: 'Today\'s Fee Collection', val: '$4,500', icon: '💰' },
+                          { title: 'Monthly Revenue', val: '$64,000', icon: '📈' },
+                          { title: 'Pending Fees', val: '$5,200', icon: '⏳' },
+                          { title: 'Overdue Payments', val: '$1,800', icon: '🚨' },
+                          { title: 'Total Students Paid', val: '1,210', icon: '👨‍🎓' },
+                          { title: 'Students with Due', val: '38', icon: '🎒' },
+                          { title: 'Scholarships Granted', val: '$12,000', icon: '🎓' },
+                          { title: 'Discounts Applied', val: '$2,400', icon: '💸' },
+                          { title: 'Refund Requests', val: '2 Pending', icon: '↩️' },
+                          { title: 'Financial Notifs', val: '6 Deadlines', icon: '🔔' },
                         ].map((c, i) => (
                           <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
                             <div className="flex justify-between text-[10px] text-slate-400">
@@ -425,70 +384,90 @@
                       </div>
                     </div>
 
-                    {/* SECTION 2 & 3: STUDENT & TEACHER SUPERVISION MODULES */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      
-                      {/* TEACHER SUPERVISION & LEAVE APPROVALS */}
-                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span>👨‍🏫</span> Teacher Supervision & Leave Approvals
-                          </h3>
-                          <span className="text-xs font-bold text-amber-600">2 Pending Approvals</span>
-                        </div>
-                        <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                          <div className="py-2.5 flex items-center justify-between">
-                            <div><p className="font-bold text-slate-900 dark:text-white">Emily Watson (Mathematics)</p><p className="text-slate-400">Medical Leave Request (Aug 5 - Aug 7)</p></div>
-                            <button onClick={() => notify('Approved Teacher Leave!')} className="px-3 py-1 bg-emerald-600 text-white rounded-lg font-bold">Approve Leave</button>
-                          </div>
-                          <div className="py-2.5 flex items-center justify-between">
-                            <div><p className="font-bold text-slate-900 dark:text-white">Arthur Pendelton (Librarian)</p><p className="text-slate-400">Timetable Swap Request (Grade 10 A)</p></div>
-                            <button onClick={() => notify('Approved Timetable Swap!')} className="px-3 py-1 bg-indigo-600 text-white rounded-lg font-bold">Approve Swap</button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* STUDENT DISCIPLINE & BEHAVIORAL LOGS */}
-                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span>⚖️</span> Student Discipline & Counseling Cases
-                          </h3>
-                          <button onClick={() => notify('Opening Discipline Portal')} className="text-xs font-bold text-rose-600 hover:underline">+ File Incident</button>
-                        </div>
-                        <div className="space-y-2 text-xs">
-                          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 flex justify-between items-center">
-                            <div><p className="font-bold text-rose-900 dark:text-rose-200">Lucas Davis (Grade 11-B)</p><p className="text-rose-700 dark:text-rose-300">Unexcused Absence & Classroom Disturbance</p></div>
-                            <button onClick={() => notify('Counseling Session Scheduled')} className="px-3 py-1 bg-rose-600 text-white rounded-lg font-bold">Counseling</button>
-                          </div>
-                        </div>
+                    {/* ACCOUNTANT 8 QUICK ACTIONS BAR */}
+                    <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
+                      <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Accountant Financial Quick Actions & Actions Bar</h3>
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button onClick={() => notify('Opening Fee Collection Window...')} className="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md hover:bg-emerald-700">➕ Collect Fee</button>
+                        <button onClick={() => notify('Generating Invoice PDF...')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">📄 Generate Invoice</button>
+                        <button onClick={() => notify('Printing Receipt...')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">🧾 Print Receipt</button>
+                        <button onClick={() => notify('Scholarship Management Form...')} className="px-3.5 py-1.5 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200">🎓 Apply Scholarship</button>
+                        <button onClick={() => notify('Applying Sibling/Staff Discount...')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200">💸 Apply Discount</button>
+                        <button onClick={() => notify('Payment Reminders Dispatched via SMS!')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">🔔 Send Payment Reminder</button>
+                        <button onClick={() => notify('Exporting Financial Report (PDF/Excel)...')} className="px-3.5 py-1.5 rounded-xl bg-cyan-50 text-cyan-700 text-xs font-bold border border-cyan-200">📊 Financial Report Export</button>
+                        <button onClick={() => notify('Searching Student Fee Ledger...')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300">🔍 Search Student Payments</button>
                       </div>
                     </div>
 
-                    {/* PERMISSIONS MATRIX & DENIED MODULES BANNER */}
+                    {/* REVENUE BREAKDOWN & INVOICE HISTORY */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>📈</span> Category-Wise Revenue Breakdown
+                          </h3>
+                        </div>
+                        <div className="h-56 relative"><canvas id="accountantRevenueChart"></canvas></div>
+                      </div>
+
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>📄</span> Recent Student Invoices & Payment Ledger
+                          </h3>
+                          <button onClick={() => notify('Viewing All Invoices')} className="text-xs font-bold text-emerald-600 hover:underline">View All →</button>
+                        </div>
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
+                            <tr><th className="p-2.5">Invoice ID</th><th className="p-2.5">Student</th><th className="p-2.5">Category</th><th className="p-2.5">Amount</th><th className="p-2.5">Status</th></tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                            {invoices.map((inv) => (
+                              <tr key={inv.id}>
+                                <td className="p-2.5 font-bold font-mono text-indigo-600">{inv.id}</td>
+                                <td className="p-2.5 font-bold text-slate-900 dark:text-white">{inv.studentName}<br/><span className="text-[10px] text-slate-400">{inv.class}</span></td>
+                                <td className="p-2.5 text-slate-600 dark:text-slate-300">{inv.category}</td>
+                                <td className="p-2.5 font-extrabold text-emerald-600">{inv.amount}</td>
+                                <td className="p-2.5">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                    inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' :
+                                    inv.status === 'UNPAID' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
+                                  }`}>
+                                    {inv.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* ACCOUNTANT PERMISSIONS MATRIX & SECURITY RESTRICTIONS BANNER */}
                     <div className="p-6 bg-slate-900 text-white rounded-3xl space-y-4 shadow-xl border border-slate-800">
                       <div className="flex justify-between items-center">
-                        <h3 className="text-sm font-extrabold flex items-center gap-2 text-amber-400">
-                          <span>🛡️</span> Vice Principal Security & Administrative Separation Policy
+                        <h3 className="text-sm font-extrabold flex items-center gap-2 text-emerald-400">
+                          <span>🛡️</span> Accountant Duties & Separation Policy Matrix
                         </h3>
-                        <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold border border-amber-500/30">
-                          Role Security Active
+                        <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold border border-emerald-500/30">
+                          Financial Separation Active
                         </span>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                         <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
-                          <p className="font-extrabold text-emerald-400">✅ Vice Principal Authorized Operational Scope:</p>
-                          <p className="text-slate-300">• Full Student Enrollment & Academic Profile Edits</p>
-                          <p className="text-slate-300">• Teacher Timetable, Supervision & Performance Evaluations</p>
-                          <p className="text-slate-300">• Academic Year, Section, Class & Exam Schedules</p>
-                          <p className="text-slate-300">• Discipline Incident Approvals & Parent Communication</p>
+                          <p className="font-extrabold text-emerald-400">✅ Accountant Authorized Financial Scope:</p>
+                          <p className="text-slate-300">• Collect Fees (Cash, Transfer, Online, Cheque, Mobile Wallet)</p>
+                          <p className="text-slate-300">• Create & Assign Fee Categories (Tuition, Transport, Hostel, Exam, Sports)</p>
+                          <p className="text-slate-300">• Generate, Email, Print & Reissue Student Invoices</p>
+                          <p className="text-slate-300">• Apply Merit Scholarships, Sibling Discounts & Financial Aid</p>
+                          <p className="text-slate-300">• Export Reports: Daily Collection, Outstanding Dues, Revenue (PDF/Excel)</p>
                         </div>
                         <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
-                          <p className="font-extrabold text-rose-400">🔒 Restricted Administrative & Financial Controls:</p>
-                          <p className="text-slate-400">• Cannot create/delete User Accounts or assign System Roles</p>
-                          <p className="text-slate-400">• Cannot modify Financial Payroll or System Database Backups</p>
-                          <p className="text-slate-400">• Cannot alter School-wide System Security Configurations</p>
+                          <p className="font-extrabold text-rose-400">🔒 Restricted Academic & System Operations:</p>
+                          <p className="text-slate-400">• Cannot Add/Delete Students or Edit Academic Information</p>
+                          <p className="text-slate-400">• Cannot Manage Attendance, Examinations, Marks, or Grade Cards</p>
+                          <p className="text-slate-400">• Cannot Change System Roles, User Accounts, or Database Settings</p>
                         </div>
                       </div>
                     </div>
@@ -496,79 +475,31 @@
                   </div>
                 )}
 
-                {/* STUDENTS DIRECTORY TAB */}
-                {currentTab === 'students' && (
+                {/* INVOICES & PAYMENTS TAB */}
+                {(currentTab === 'collect_fees' || currentTab === 'generate_invoice') && (
                   <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div>
-                        <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Students & Admissions Directory</h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Vice Principal Student Management & Transfers</p>
-                      </div>
-
-                      {CAN_ADMIT_STUDENTS && (
-                        <button onClick={() => setShowAdmissionModal(true)} className="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-indigo-600 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2">
-                          <span>➕</span> + Add Student Details (Vice Principal)
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
-                      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b">
-                          <tr>
-                            <th className="p-3.5">Student Name</th><th className="p-3.5">Admission / Roll</th><th className="p-3.5">Class / Section</th><th className="p-3.5">House</th><th className="p-3.5">Medical Alert</th><th className="p-3.5 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                          {students.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).map(s => (
-                            <tr key={s.id}>
-                              <td className="p-3.5 font-bold text-slate-900 dark:text-white">{s.name}<br/><span className="text-[10px] text-slate-400">{s.email}</span></td>
-                              <td className="p-3.5">{s.admission}<br/><span className="text-[10px] text-slate-400">Roll: {s.roll}</span></td>
-                              <td className="p-3.5 font-semibold text-indigo-600">{s.class}</td>
-                              <td className="p-3.5"><span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">{s.house}</span></td>
-                              <td className="p-3.5 text-rose-600 font-semibold">{s.allergies !== 'None' ? `⚠️ ${s.allergies}` : 'None'}</td>
-                              <td className="p-3.5 text-right"><button onClick={() => setViewStudent(s)} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-semibold">View Profile</button></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 space-y-4">
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-white">Accountant Fee Collection & Invoice Generator</h2>
+                      <p className="text-xs text-slate-500">Record payments across Cash, Bank Transfer, Online, Cheque, and Mobile Wallet.</p>
+                      <button onClick={() => notify('Fee Invoice Generated & Receipt Printed!')} className="px-5 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md">
+                        + Issue Fee Receipt
+                      </button>
                     </div>
                   </div>
                 )}
               </main>
 
-              {/* FOOTER STATISTICS */}
               <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-8 py-3.5 flex flex-wrap items-center justify-between text-xs text-slate-500 font-semibold">
                 <div className="flex flex-wrap items-center gap-6">
-                  <span>👨‍🎓 Students: <strong className="text-slate-900 dark:text-white">1,248</strong></span>
-                  <span>👨‍🏫 Teachers: <strong className="text-slate-900 dark:text-white">86</strong></span>
-                  <span>✅ Attendance: <strong className="text-emerald-600">96.4%</strong></span>
-                  <span>📝 Assignments Pending: <strong className="text-amber-600">14</strong></span>
-                  <span>🧪 Upcoming Exams: <strong className="text-indigo-600">3</strong></span>
+                  <span>💰 Today's Collection: <strong className="text-emerald-600">$4,500</strong></span>
+                  <span>📈 Monthly Revenue: <strong className="text-slate-900 dark:text-white">$64,000</strong></span>
+                  <span>⏳ Pending Fees: <strong className="text-rose-600">$5,200</strong></span>
+                  <span>🎓 Scholarships: <strong className="text-purple-600">$12,000</strong></span>
                 </div>
-                <p className="text-[11px] text-slate-400">Pathaibhara SMS © 2026</p>
+                <p className="text-[11px] text-slate-400">Pathaibhara SMS Financial Engine © 2026</p>
               </footer>
             </div>
           </div>
-
-          {/* 11-SECTION ADMISSION MODAL */}
-          {showAdmissionModal && CAN_ADMIT_STUDENTS && (
-            <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
-                <div className="p-5 border-b flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-600 text-white flex items-center justify-center font-extrabold text-lg">➕</div>
-                    <div><h3 className="text-base font-extrabold text-slate-900 dark:text-white">Vice Principal Student Admission</h3><p className="text-xs text-slate-400">11-Category Registration Form</p></div>
-                  </div>
-                  <button onClick={() => setShowAdmissionModal(false)} className="p-2 rounded-xl text-slate-400">✕</button>
-                </div>
-                <form onSubmit={handleAddStudentSubmit} className="p-6 flex-1 overflow-y-auto space-y-4 text-xs">
-                  <p className="font-bold text-amber-600">Vice Principal Authorized Student Admission Active</p>
-                  <button type="submit" className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold">✓ Submit Enrollment</button>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
       );
     }
