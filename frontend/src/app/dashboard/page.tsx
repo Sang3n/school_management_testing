@@ -5,12 +5,14 @@ import { useAuth } from '../../context/AuthContext';
 import { fetchDashboardData } from '../../lib/api';
 import { AnalyticsCards } from '../../components/dashboard/AnalyticsCards';
 import { OverviewCharts } from '../../components/dashboard/OverviewCharts';
-import { Plus, UserPlus, Calendar, Award, FileText, Bell, Sparkles } from 'lucide-react';
+import { UserPlus, Calendar, Award, Bell, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const { currentRole, user } = useAuth();
   const [data, setData] = useState<any>(null);
+
+  const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
 
   useEffect(() => {
     fetchDashboardData().then(setData);
@@ -32,17 +34,18 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-extrabold mt-1 tracking-tight">
             Welcome back, {user?.firstName || 'Administrator'}!
           </h1>
-
         </div>
 
         {/* Quick Action Buttons */}
         <div className="flex flex-wrap gap-2">
-          <Link
-            href="/students"
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white text-indigo-700 text-xs font-bold hover:bg-indigo-50 shadow-sm"
-          >
-            <UserPlus className="w-3.5 h-3.5" /> Admission
-          </Link>
+          {CAN_ADMIT_STUDENTS && (
+            <Link
+              href="/students"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white text-indigo-700 text-xs font-bold hover:bg-indigo-50 shadow-sm"
+            >
+              <UserPlus className="w-3.5 h-3.5" /> Admission
+            </Link>
+          )}
 
           <Link
             href="/attendance"
