@@ -167,7 +167,15 @@
           {/* Sidebar Navigation */}
           <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col justify-between h-screen sticky top-0 z-30">
             <div>
-
+              {/* Brand Header - Click to Return to Dashboard */}
+              <div 
+                onClick={() => setCurrentTab('dashboard')} 
+                className="h-16 flex items-center px-6 border-b border-gray-800 gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                title="Return to Dashboard Overview"
+              >
+                <span className="text-2xl">🏫</span>
+                <span className="font-extrabold text-lg text-white tracking-tight">Pathaibhara</span>
+              </div>
 
               {/* Portal Role Indicator */}
               <div className="px-4 py-3 mx-3 my-3 bg-indigo-950/50 rounded-xl border border-indigo-900/60 flex items-center gap-2">
@@ -291,14 +299,10 @@
                       </span>
                       <h1 className="text-2xl font-extrabold mt-1">Welcome back, {currentUser.name.split(' ')[0]}!</h1>
                     </div>
-                    {CAN_ADMIT_STUDENTS ? (
+                    {CAN_ADMIT_STUDENTS && (
                       <button onClick={() => setCurrentTab('students')} className="px-4 py-2 bg-white text-indigo-700 font-bold text-xs rounded-xl shadow-md hover:bg-gray-100">
                         + New Admission
                       </button>
-                    ) : (
-                      <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md text-white/80 text-xs font-semibold rounded-xl border border-white/20">
-                        🔒 Read-Only Portal
-                      </span>
                     )}
                   </div>
 
