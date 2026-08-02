@@ -97,6 +97,9 @@
 
       const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.SUPER_ADMIN;
 
+      // Restrict Student Admission to: Super Admin, School Admin, Principal, Vice Principal, Accountant
+      const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
+
       useEffect(() => {
         if (currentTab === 'dashboard' && window.Chart) {
           // Render Revenue Chart
@@ -149,6 +152,14 @@
       const notify = (msg) => {
         setNotification(msg);
         setTimeout(() => setNotification(null), 3000);
+      };
+
+      const handleOpenAdmissionModal = () => {
+        if (!CAN_ADMIT_STUDENTS) {
+          notify('🔒 Permission Denied: Only Super Admin, School Admin, Principal, Vice Principal, and Accountant can admit students.');
+          return;
+        }
+        setShowAdmissionModal(true);
       };
 
       return (
@@ -269,8 +280,8 @@
             {/* Content Container */}
             <main className="p-8 max-w-7xl w-full mx-auto space-y-6">
               {notification && (
-                <div className="p-3.5 rounded-2xl bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs font-semibold flex items-center gap-2">
-                  <span>✅</span> {notification}
+                <div className="p-3.5 rounded-2xl bg-indigo-950 border border-indigo-800 text-indigo-200 text-xs font-semibold flex items-center gap-2">
+                  <span>ℹ️</span> {notification}
                 </div>
               )}
 
@@ -284,9 +295,15 @@
                       </span>
                       <h1 className="text-2xl font-extrabold mt-1">Welcome back, {currentUser.name.split(' ')[0]}!</h1>
                     </div>
-                    <button onClick={() => setCurrentTab('students')} className="px-4 py-2 bg-white text-indigo-700 font-bold text-xs rounded-xl shadow-md">
-                      + New Admission
-                    </button>
+                    {CAN_ADMIT_STUDENTS ? (
+                      <button onClick={() => setCurrentTab('students')} className="px-4 py-2 bg-white text-indigo-700 font-bold text-xs rounded-xl shadow-md hover:bg-gray-100">
+                        + New Admission
+                      </button>
+                    ) : (
+                      <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md text-white/80 text-xs font-semibold rounded-xl border border-white/20">
+                        🔒 Read-Only Portal
+                      </span>
+                    )}
                   </div>
 
                   {/* Analytics Counter Cards */}
@@ -330,9 +347,15 @@
                       <h2 className="text-xl font-bold">Student Directory & Profiles</h2>
                       <p className="text-xs text-gray-400">Manage student records, roll numbers & admissions</p>
                     </div>
-                    <button onClick={() => setShowAdmissionModal(true)} className="px-4 py-2 bg-indigo-600 text-white font-semibold text-xs rounded-xl shadow-md">
-                      + New Admission
-                    </button>
+                    {CAN_ADMIT_STUDENTS ? (
+                      <button onClick={handleOpenAdmissionModal} className="px-4 py-2 bg-indigo-600 text-white font-semibold text-xs rounded-xl shadow-md hover:bg-indigo-700">
+                        + New Admission
+                      </button>
+                    ) : (
+                      <span className="px-3.5 py-2 bg-gray-800 text-gray-400 text-xs font-semibold rounded-xl border border-gray-700 flex items-center gap-1.5">
+                        🔒 Admission Restricted (Admins & Management Only)
+                      </span>
+                    )}
                   </div>
 
                   <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">

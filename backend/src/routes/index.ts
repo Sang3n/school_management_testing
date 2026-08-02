@@ -32,7 +32,13 @@ router.get('/students', getAllStudents);
 router.get('/students/:id', getStudentById);
 router.post(
   '/students/admission',
-  authorizeRoles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.SCHOOL_ADMIN, UserRoleEnum.PRINCIPAL, UserRoleEnum.RECEPTIONIST),
+  authorizeRoles(
+    UserRoleEnum.SUPER_ADMIN,
+    UserRoleEnum.SCHOOL_ADMIN,
+    UserRoleEnum.PRINCIPAL,
+    UserRoleEnum.VICE_PRINCIPAL,
+    UserRoleEnum.ACCOUNTANT
+  ),
   createStudentAdmission
 );
 

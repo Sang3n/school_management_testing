@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { MOCK_STUDENTS } from '../../lib/api';
 import { Student } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import {
   Search,
   Plus,
@@ -13,11 +14,15 @@ import {
   Download,
   Mail,
   Phone,
+  Lock,
 } from 'lucide-react';
 import { AdmissionFormModal } from './AdmissionFormModal';
 import { StudentProfileView } from './StudentProfileView';
 
 export function StudentList() {
+  const { currentRole } = useAuth();
+  const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
+
   const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS as any);
   const [search, setSearch] = useState('');
   const [selectedClass, setSelectedClass] = useState('ALL');
@@ -54,12 +59,18 @@ export function StudentList() {
           <button className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
             <Download className="w-3.5 h-3.5 text-gray-500" /> Export CSV
           </button>
-          <button
-            onClick={() => setShowAdmissionModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all"
-          >
-            <Plus className="w-4 h-4" /> New Admission
-          </button>
+          {CAN_ADMIT_STUDENTS ? (
+            <button
+              onClick={() => setShowAdmissionModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all"
+            >
+              <Plus className="w-4 h-4" /> New Admission
+            </button>
+          ) : (
+            <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs font-semibold border border-gray-200 dark:border-gray-700">
+              <Lock className="w-3.5 h-3.5" /> Admission Restricted
+            </span>
+          )}
         </div>
       </div>
 
