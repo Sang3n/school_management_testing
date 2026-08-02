@@ -281,51 +281,7 @@ export function AdmissionFormModal({ onClose, onAddStudent }: AdmissionFormProps
             <div className="space-y-4">
               <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">2. Academic Information</h4>
               
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Academic Year</label>
-                  <input type="text" value={formData.academicYear} onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-bold" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Admission Date</label>
-                  <input type="date" value={formData.admissionDate} onChange={(e) => setFormData({ ...formData, admissionDate: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Class Allocation</label>
-                  <select value={formData.classCode} onChange={(e) => setFormData({ ...formData, classCode: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-bold">
-                    <option value="G10">Grade 10</option>
-                    <option value="G11">Grade 11</option>
-                    <option value="G12">Grade 12</option>
-                  </select>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Section</label>
-                  <input type="text" value={formData.section} onChange={(e) => setFormData({ ...formData, section: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-bold" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Stream</label>
-                  <select value={formData.stream} onChange={(e) => setFormData({ ...formData, stream: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100">
-                    <option value="Science">Science</option>
-                    <option value="Management">Management</option>
-                    <option value="Humanities">Humanities</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">House (Optional)</label>
-                  <input type="text" value={formData.house} onChange={(e) => setFormData({ ...formData, house: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Shift</label>
-                  <select value={formData.shift} onChange={(e) => setFormData({ ...formData, shift: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100">
-                    <option value="Morning">Morning</option>
-                    <option value="Day">Day</option>
-                    <option value="Evening">Evening</option>
-                  </select>
-                </div>
-              </div>
             </div>
           )}
 
