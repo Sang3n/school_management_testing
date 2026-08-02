@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pathaibhara - Multi-Role Educational Management Portal</title>
+  <title>Pathaibhara - Principal & Executive Portal</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -57,16 +57,16 @@
     const { useState, useEffect, useRef } = React;
 
     const ROLE_USER_PROFILES = {
-      SUPER_ADMIN: { name: 'Alexander Vance', email: 'superadmin@sms.edu', avatar: '👑', color: 'indigo' },
-      SCHOOL_ADMIN: { name: 'Sarah Jenkins', email: 'admin@sms.edu', avatar: '🛡️', color: 'indigo' },
-      PRINCIPAL: { name: 'Dr. Robert Langdon', email: 'principal@sms.edu', avatar: '🎓', color: 'purple' },
-      VICE_PRINCIPAL: { name: 'Elena Rostova', email: 'viceprincipal@sms.edu', avatar: '⚖️', color: 'amber' },
-      ACCOUNTANT: { name: 'Marcus Goldman', email: 'accountant@sms.edu', avatar: '💵', color: 'emerald' },
-      TEACHER: { name: 'Emily Watson', email: 'teacher@sms.edu', avatar: '👩‍🏫', color: 'blue' },
-      LIBRARIAN: { name: 'Arthur Pendelton', email: 'librarian@sms.edu', avatar: '📚', color: 'cyan' },
-      RECEPTIONIST: { name: 'Clara Oswald', email: 'receptionist@sms.edu', avatar: '🏢', color: 'rose' },
-      STUDENT: { name: 'Ethan Hunt', email: 'student@sms.edu', avatar: '🎒', color: 'teal' },
-      PARENT: { name: 'Jonathan Hunt', email: 'parent@sms.edu', avatar: '👨‍👩‍👧', color: 'violet' },
+      SUPER_ADMIN: { name: 'Alexander Vance', email: 'superadmin@sms.edu', avatar: '👑' },
+      SCHOOL_ADMIN: { name: 'Sarah Jenkins', email: 'admin@sms.edu', avatar: '🛡️' },
+      PRINCIPAL: { name: 'Dr. Robert Langdon', email: 'principal@sms.edu', avatar: '🎓' },
+      VICE_PRINCIPAL: { name: 'Elena Rostova', email: 'viceprincipal@sms.edu', avatar: '⚖️' },
+      ACCOUNTANT: { name: 'Marcus Goldman', email: 'accountant@sms.edu', avatar: '💵' },
+      TEACHER: { name: 'Emily Watson', email: 'teacher@sms.edu', avatar: '👩‍🏫' },
+      LIBRARIAN: { name: 'Arthur Pendelton', email: 'librarian@sms.edu', avatar: '📚' },
+      RECEPTIONIST: { name: 'Clara Oswald', email: 'receptionist@sms.edu', avatar: '🏢' },
+      STUDENT: { name: 'Ethan Hunt', email: 'student@sms.edu', avatar: '🎒' },
+      PARENT: { name: 'Jonathan Hunt', email: 'parent@sms.edu', avatar: '👨‍👩‍👧' },
     };
 
     const ROLES = [
@@ -96,7 +96,7 @@
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('SUPER_ADMIN'); // Default to Super Admin so all switchers work!
+      const [currentRole, setCurrentRole] = useState('PRINCIPAL'); // Default to Principal Dashboard
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
@@ -108,73 +108,127 @@
       const [viewStudent, setViewStudent] = useState(null);
       const [notification, setNotification] = useState(null);
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+      const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: true, Teachers: true, Academics: true, Examinations: true, Communication: true });
 
-      const chartRefPrincipalAtt = useRef(null);
-      const chartRefPrincipalFee = useRef(null);
-      const chartRefAccountantRev = useRef(null);
+      // Admission Form Multi-Step State (11 Sections)
+      const [admissionStep, setAdmissionStep] = useState(1);
+      const [studentForm, setStudentForm] = useState({
+        studentId: 'STU-2026-' + Math.floor(1000 + Math.random() * 9000),
+        admissionNo: 'ADM-2026-' + Math.floor(10000 + Math.random() * 90000),
+        rollNo: String(Math.floor(100 + Math.random() * 900)),
+        firstName: '', middleName: '', lastName: '', dob: '2010-06-12', gender: 'MALE', bloodGroup: 'O+', nationality: 'Nepali', religion: 'Hinduism', citizenshipNo: '', birthCertNo: '',
+        academicYear: '2025-2026', admissionDate: new Date().toISOString().split('T')[0], classCode: 'Class 10', section: 'A', faculty: 'Schooling', house: 'Red', shift: 'Day', previousSchool: 'Sunrise Sec. School', previousGrade: '3.85 GPA', studentStatus: 'ACTIVE',
+        mobileNumber: '+977 9801234567', email: '', currentAddress: 'Baneshwor-10, Kathmandu', permanentAddress: 'Dharan-05, Sunsari', district: 'Kathmandu', province: 'Bagmati Province', country: 'Nepal', postalCode: '44600',
+        fatherName: '', fatherMobile: '+977 9841000000', fatherEmail: '', fatherOccupation: 'Business', fatherCitizenshipNo: '12-01-75-09876', motherName: '', motherMobile: '+977 9841111111', motherEmail: '', motherOccupation: 'Educator', motherCitizenshipNo: '12-01-78-01234', guardianName: '', guardianRelation: 'Uncle', guardianMobile: '', guardianEmail: '', guardianAddress: '',
+        emergencyContactPerson: '', emergencyRelation: 'Father', emergencyPhone: '+977 9801234567', emergencyAltPhone: '+977 9841000000', emergencyAddress: 'Baneshwor-10, Kathmandu',
+        allergies: 'None', medicalConditions: 'None', disabilities: 'None', medications: 'None', doctorName: 'Dr. S. K. Sharma', hospitalName: 'Norvic Hospital', emergencyMedicalNotes: 'No chronic illness.',
+        usesTransport: 'Yes', route: 'Route #4 (Koteshwor - Baneshwor)', pickupPoint: 'Baneshwor Chowk', dropoffPoint: 'Baneshwor Chowk', busNumber: 'BA 3 KHA 4589', driverName: 'Ram Bahadur',
+        hostelRequired: 'No', hostelName: 'N/A', roomNumber: 'N/A', bedNumber: 'N/A', wardenName: 'N/A',
+        admissionFee: '$500', monthlyFeePlan: '$250 / Month', scholarship: '10% Merit Waiver', discount: '$50', paymentMethod: 'Direct Transfer', feeStatus: 'PAID',
+        studentPhotoUploaded: true, birthCertUploaded: true, citizenshipCertUploaded: false, transferCertUploaded: true, markSheetUploaded: true, characterCertUploaded: true, medicalCertUploaded: false, passportCopyUploaded: false, parentCitizenshipCopyUploaded: true,
+        username: '', tempPassword: 'SMS-' + Math.random().toString(36).slice(-8).toUpperCase(), sendCredentialsSMS: true,
+      });
 
-      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.SUPER_ADMIN;
+      const chartRefPerformance = useRef(null);
 
-      // ROLE PERMISSION LOGIC
+      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.PRINCIPAL;
+
+      // ROLE PERMISSION CHECKS
       const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'].includes(currentRole);
-      const IS_VICE_PRINCIPAL = currentRole === 'VICE_PRINCIPAL';
       const IS_ACCOUNTANT = currentRole === 'ACCOUNTANT';
-      const IS_TEACHER = currentRole === 'TEACHER';
       const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
+
+      // SPECIFIC PRINCIPAL RECOMMENDED SIDEBAR
+      const PRINCIPAL_SIDEBAR = [
+        { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
+        {
+          group: 'Students', icon: '🎓', subItems: [
+            { id: 'students', label: 'All Students' },
+            { id: 'admissions', label: 'Admissions' },
+            { id: 'promotions', label: 'Student Promotion' },
+            { id: 'transfers', label: 'Transfers' },
+            { id: 'discipline', label: 'Discipline Cases' },
+          ]
+        },
+        {
+          group: 'Teachers', icon: '👨‍🏫', subItems: [
+            { id: 'faculty', label: 'Faculty Directory' },
+            { id: 'teacher_attendance', label: 'Teacher Attendance' },
+            { id: 'teacher_timetable', label: 'Teacher Timetable' },
+            { id: 'performance', label: 'Performance Review' },
+            { id: 'leave_requests', label: 'Leave Requests' },
+          ]
+        },
+        {
+          group: 'Academics', icon: '📚', subItems: [
+            { id: 'academic_year', label: 'Academic Year' },
+            { id: 'classes', label: 'Classes & Sections' },
+            { id: 'subjects', label: 'Subjects' },
+            { id: 'timetable', label: 'Timetable' },
+            { id: 'curriculum', label: 'Curriculum' },
+          ]
+        },
+        { id: 'attendance', label: 'Attendance Monitor', icon: '✅' },
+        {
+          group: 'Examinations', icon: '📝', subItems: [
+            { id: 'exams', label: 'Exam Schedule' },
+            { id: 'marks_review', label: 'Marks Review' },
+            { id: 'results', label: 'Publish Results' },
+            { id: 'report_cards', label: 'Report Cards' },
+          ]
+        },
+        { id: 'assignments', label: 'Assignments Tracker', icon: '📚' },
+        {
+          group: 'Communication', icon: '💬', subItems: [
+            { id: 'notices', label: 'Notice Board' },
+            { id: 'messages', label: 'Messages' },
+            { id: 'parent_meetings', label: 'Parent Meetings' },
+          ]
+        },
+        { id: 'reports', label: 'Institutional Reports', icon: '📈' },
+        { id: 'library', label: 'Library Overview', icon: '📖' },
+        { id: 'transport', label: 'Transport Fleet', icon: '🚌' },
+        { id: 'hostel', label: 'Hostel Facilities', icon: '🏢' },
+        { id: 'calendar', label: 'School Calendar', icon: '📆' },
+        { id: 'profile', label: 'My Profile & 2FA', icon: '👤' },
+      ];
+
+      const ADMISSION_WIZARD_STEPS = [
+        { num: 1, label: 'Personal Info', icon: '👤' },
+        { num: 2, label: 'Academic Info', icon: '🎓' },
+        { num: 3, label: 'Contact Details', icon: '📞' },
+        { num: 4, label: 'Parent / Guardian', icon: '👨‍👩‍👧' },
+        { num: 5, label: 'Emergency Contact', icon: '🚨' },
+        { num: 6, label: 'Medical Info', icon: '🩺' },
+        { num: 7, label: 'Transport', icon: '🚌' },
+        { num: 8, label: 'Hostel', icon: '🏢' },
+        { num: 9, label: 'Fee & Payment', icon: '💵' },
+        { num: 10, label: 'Documents Upload', icon: '📁' },
+        { num: 11, label: 'Portal Account', icon: '🔐' },
+      ];
 
       useEffect(() => {
         if (isDark) document.documentElement.classList.add('dark');
         else document.documentElement.classList.remove('dark');
       }, [isDark]);
 
-      // Initialize Charts dynamically depending on current active role dashboard
+      // Initialize Performance Chart for Principal Dashboard
       useEffect(() => {
-        if (currentTab === 'dashboard' && window.Chart) {
-          if (IS_PRINCIPAL_EXECUTIVE) {
-            const ctxA = document.getElementById('attendanceDonutChart');
-            if (ctxA) {
-              if (chartRefPrincipalAtt.current) chartRefPrincipalAtt.current.destroy();
-              chartRefPrincipalAtt.current = new Chart(ctxA, {
-                type: 'doughnut',
-                data: {
-                  labels: ['Present (94%)', 'Absent (3%)', 'On Leave (2%)', 'Late (1%)'],
-                  datasets: [{ data: [94, 3, 2, 1], backgroundColor: ['#10b981', '#f43f5e', '#3b82f6', '#f59e0b'], borderWidth: 0 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-              });
-            }
-
-            const ctxF = document.getElementById('feeBarChart');
-            if (ctxF) {
-              if (chartRefPrincipalFee.current) chartRefPrincipalFee.current.destroy();
-              chartRefPrincipalFee.current = new Chart(ctxF, {
-                type: 'bar',
-                data: {
-                  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                  datasets: [
-                    { label: 'Collected Fees ($)', data: [45000, 52000, 48000, 61000, 68000, 64000], backgroundColor: '#4f46e5', borderRadius: 8 },
-                    { label: 'Pending Dues ($)', data: [8000, 6000, 9500, 4000, 3000, 5200], backgroundColor: '#f43f5e', borderRadius: 8 }
-                  ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-              });
-            }
-          } else if (IS_ACCOUNTANT) {
-            const ctxR = document.getElementById('accountantRevenueChart');
-            if (ctxR) {
-              if (chartRefAccountantRev.current) chartRefAccountantRev.current.destroy();
-              chartRefAccountantRev.current = new Chart(ctxR, {
-                type: 'bar',
-                data: {
-                  labels: ['Tuition', 'Admission', 'Transport', 'Hostel', 'Exam', 'Misc'],
-                  datasets: [
-                    { label: 'Collected Revenue ($)', data: [45000, 15000, 12000, 18000, 9500, 4200], backgroundColor: '#10b981', borderRadius: 8 },
-                    { label: 'Outstanding Dues ($)', data: [3200, 0, 1400, 2100, 800, 300], backgroundColor: '#f43f5e', borderRadius: 8 }
-                  ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-              });
-            }
+        if (currentTab === 'dashboard' && IS_PRINCIPAL_EXECUTIVE && window.Chart) {
+          const ctxP = document.getElementById('principalPerformanceChart');
+          if (ctxP) {
+            if (chartRefPerformance.current) chartRefPerformance.current.destroy();
+            chartRefPerformance.current = new Chart(ctxP, {
+              type: 'line',
+              data: {
+                labels: ['Term 1', 'Mid-Term', 'Term 2', 'Pre-Board', 'Final Exam'],
+                datasets: [
+                  { label: 'Grade 10 Academic Avg (%)', data: [82, 85, 88, 91, 94], borderColor: '#6366f1', fill: false, tension: 0.3 },
+                  { label: 'Grade 9 Academic Avg (%)', data: [78, 81, 84, 87, 90], borderColor: '#10b981', fill: false, tension: 0.3 }
+                ]
+              },
+              options: { responsive: true, maintainAspectRatio: false }
+            });
           }
         }
       }, [currentTab, currentRole, isDark]);
@@ -202,128 +256,149 @@
         setStudents([newEntry, ...students]);
         setShowAdmissionModal(false);
         setAdmissionStep(1);
-        notify(`🎉 Student "${fullName}" Successfully Enrolled!`);
+        notify(`🎉 Student "${fullName}" Successfully Admitted by Principal!`);
       };
 
       return (
         <div className="flex flex-col min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
           
-          {/* ANNOUNCEMENT & ROLE TICKER */}
-          <div className="bg-indigo-900 text-white text-xs px-6 py-1.5 flex items-center justify-between overflow-hidden shadow-inner">
+          {/* TOP PRINCIPAL TICKER */}
+          <div className="bg-purple-950 text-white text-xs px-6 py-1.5 flex items-center justify-between overflow-hidden shadow-inner border-b border-purple-800">
             <div className="flex items-center gap-3 shrink-0">
-              <span className="font-extrabold bg-rose-600 px-2 py-0.5 rounded uppercase tracking-wider text-[10px]">PATHAIBHARA SMS</span>
-              <span className="font-medium text-indigo-200">ACTIVE ROLE CONTEXT: {currentRole} ({currentUser.name})</span>
+              <span className="font-extrabold bg-purple-600 text-white px-2 py-0.5 rounded uppercase tracking-wider text-[10px]">PRINCIPAL EXECUTIVE PORTAL</span>
+              <span className="font-medium text-purple-200">🎓 Highest Academic Authority • Overseeing Academics, Teachers & Operations</span>
             </div>
             <div className="overflow-hidden w-1/2 relative hidden sm:block">
-              <span className="animate-ticker font-semibold text-indigo-100">
-                📢 Fully Dynamic Portal Active • Switch between all 10 roles (Super Admin, Admin, Principal, VP, Accountant, Teacher, Student, Parent, Librarian, Receptionist).
+              <span className="animate-ticker font-semibold text-purple-100">
+                📢 Principal Dashboard Active: Managing Admissions, Faculty Evaluations, Exam Schedules, Results Publication & Disciplinary Approvals.
               </span>
             </div>
           </div>
 
           <div className="flex flex-1 min-h-0">
-            {/* DYNAMIC SIDEBAR */}
+            {/* RECOMMENDED PRINCIPAL SIDEBAR */}
             <aside className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between sticky top-0 z-30 transition-all duration-300 shadow-sm`}>
               <div>
                 <div 
                   onClick={() => setCurrentTab('dashboard')} 
                   className="h-16 flex items-center px-5 border-b border-slate-200 dark:border-slate-800 gap-3 cursor-pointer hover:opacity-85 transition-opacity"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-indigo-600 flex items-center justify-center text-white shadow-md font-extrabold text-lg shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md font-extrabold text-lg shrink-0">
                     🏫
                   </div>
                   {!sidebarCollapsed && (
                     <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
-                      <span className="text-rose-600 dark:text-rose-400">Pathaibhara</span>
+                      <span className="text-purple-600 dark:text-purple-400">Pathaibhara</span>
                     </span>
                   )}
                 </div>
 
                 {!sidebarCollapsed && (
-                  <div className="px-4 py-3 mx-3 my-3 bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-between">
+                  <div className="px-4 py-3 mx-3 my-3 bg-purple-50 dark:bg-purple-950/50 rounded-2xl border border-purple-200 dark:border-purple-900/60 flex items-center justify-between">
                     <div className="flex items-center gap-2.5 overflow-hidden">
-                      <span className="text-lg shrink-0">{currentUser.avatar}</span>
+                      <span className="text-purple-600 dark:text-purple-400 text-sm shrink-0">🎓</span>
                       <div className="overflow-hidden">
-                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase font-bold tracking-wider">Active Role</p>
+                        <p className="text-[10px] text-purple-600 dark:text-purple-400 uppercase font-bold tracking-wider">Active Context</p>
                         <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate">{currentRole.replace('_', ' ')}</p>
                       </div>
                     </div>
                   </div>
                 )}
 
-                <nav className="px-3 py-2 space-y-1 max-h-[calc(100vh-190px)] overflow-y-auto">
-                  <button onClick={() => setCurrentTab('dashboard')} className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold ${currentTab === 'dashboard' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'}`}>
-                    <span>📊</span>{!sidebarCollapsed && <span>Dashboard Overview</span>}
-                  </button>
-
-                  <button onClick={() => setCurrentTab('students')} className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold ${currentTab === 'students' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'}`}>
-                    <span>🎓</span>{!sidebarCollapsed && <span>Students & Directory</span>}
-                  </button>
-
-                  {IS_ACCOUNTANT && (
-                    <button onClick={() => setCurrentTab('invoices')} className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold ${currentTab === 'invoices' ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'}`}>
-                      <span>💵</span>{!sidebarCollapsed && <span>Fee Collection & Invoices</span>}
-                    </button>
-                  )}
-
-                  <button onClick={() => setCurrentTab('users')} className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold ${currentTab === 'users' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'}`}>
-                    <span>🔑</span>{!sidebarCollapsed && <span>User Directory (All 10 Roles)</span>}
-                  </button>
+                <nav className="px-3 py-2 space-y-1.5 max-h-[calc(100vh-190px)] overflow-y-auto">
+                  {PRINCIPAL_SIDEBAR.map((item, idx) => {
+                    if (item.subItems) {
+                      const isOpen = openSidebarCategory[item.group];
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <button
+                            onClick={() => setOpenSidebarCategory({ ...openSidebarCategory, [item.group]: !isOpen })}
+                            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span>{item.icon}</span>
+                              {!sidebarCollapsed && <span>{item.group}</span>}
+                            </div>
+                            {!sidebarCollapsed && <span>{isOpen ? '▾' : '▸'}</span>}
+                          </button>
+                          {isOpen && !sidebarCollapsed && (
+                            <div className="pl-8 space-y-1 border-l-2 border-slate-200 dark:border-slate-800 ml-4">
+                              {item.subItems.map((sub) => (
+                                <button
+                                  key={sub.id}
+                                  onClick={() => setCurrentTab(sub.id)}
+                                  className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                                    currentTab === sub.id ? 'bg-purple-600 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                  }`}
+                                >
+                                  • {sub.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setCurrentTab(item.id)}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                          currentTab === item.id ? 'bg-slate-700 dark:bg-purple-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <span>{item.icon}</span>
+                        {!sidebarCollapsed && <span>{item.label}</span>}
+                      </button>
+                    );
+                  })}
                 </nav>
               </div>
 
               <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 Full Multi-Role</p>}
+                {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 Principal Edition</p>}
                 <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
                   {sidebarCollapsed ? '➔' : '◀'}
                 </button>
               </div>
             </aside>
 
-            {/* MAIN WORKSPACE */}
+            {/* MAIN WORKSPACE AREA */}
             <div className="flex-1 flex flex-col min-w-0">
               
               <header className="h-16 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center font-bold text-sm">
-                      {currentUser.avatar}
-                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950 flex items-center justify-center font-bold text-purple-700 text-sm">🎓</div>
                     <h1 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight capitalize">
-                      {currentRole.replace('_', ' ')} Dashboard
+                      Principal Executive Operations Dashboard
                     </h1>
                   </div>
 
-                  <select value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} className="px-3 py-1 text-xs rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-extrabold border border-indigo-200">
+                  <select 
+                    value={academicYear} 
+                    onChange={(e) => setAcademicYear(e.target.value)}
+                    className="px-3 py-1 text-xs rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-extrabold border border-purple-200"
+                  >
                     <option value="2025-2026">Academic Year: 2025-2026</option>
                     <option value="2026-2027">Academic Year: 2026-2027</option>
                   </select>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* ✨ ROLE SWITCHER DROPDOWN */}
+                  {/* Switch Role Dropdown */}
                   <div className="relative">
-                    <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-extrabold shadow-md">
-                      <span>✨ Switch Portal Role: {currentRole}</span>
+                    <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-xs font-bold">
+                      <span>✨ Switch Role: {currentRole}</span>
                       <span>▼</span>
                     </button>
                     {showRoleDropdown && (
-                      <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-2 z-50">
-                        <div className="px-3.5 py-1.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                          <span className="text-[10px] uppercase font-extrabold text-slate-400">Select 1 of 10 Roles</span>
-                        </div>
-                        <div className="max-h-72 overflow-y-auto">
-                          {ROLES.map((r) => (
-                            <button
-                              key={r.code}
-                              onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); notify(`Switched Portal Context to ${r.name}`); }}
-                              className={`w-full text-left px-3.5 py-2 text-xs font-medium flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-700 ${currentRole === r.code ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-slate-700/50' : 'text-slate-700 dark:text-slate-300'}`}
-                            >
-                              <span>{ROLE_USER_PROFILES[r.code].avatar} {r.name}</span>
-                              {currentRole === r.code && <span>✓ Active</span>}
-                            </button>
-                          ))}
-                        </div>
+                      <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50">
+                        {ROLES.map((r) => (
+                          <button key={r.code} onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); }} className="w-full text-left px-3.5 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700">
+                            {r.name}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -333,7 +408,7 @@
                   </button>
 
                   <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
-                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
+                    <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-xs text-white">
                       {currentUser.avatar}
                     </div>
                     <div className="hidden md:block">
@@ -346,7 +421,7 @@
 
               <main className="p-8 max-w-7xl w-full mx-auto space-y-8">
                 {notification && (
-                  <div className="p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 text-indigo-700 text-xs font-bold flex items-center gap-2">
+                  <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950 border border-purple-200 text-purple-800 text-xs font-bold flex items-center gap-2">
                     <span>ℹ️</span> {notification}
                   </div>
                 )}
@@ -354,241 +429,150 @@
                 {currentTab === 'dashboard' && (
                   <div className="space-y-8">
                     
-                    {/* 1. PRINCIPAL / SUPER ADMIN / SCHOOL ADMIN 15-ROW DASHBOARD */}
-                    {IS_PRINCIPAL_EXECUTIVE && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">15-Row Executive Principal Dashboard</h2>
-                          <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold">👑 Executive Management Access</span>
-                        </div>
-
-                        {/* ROW 1: 8 CARDS */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-                          {[
-                            { title: 'Total Students', val: '1,284', icon: '👨‍🎓' },
-                            { title: 'Classes Assigned', val: '12', icon: '🏫' },
-                            { title: 'Subjects', val: '4', icon: '📚' },
-                            { title: 'Attendance Today', val: '96.4%', icon: '✅' },
-                            { title: 'Pending Review', val: '14', icon: '📝' },
-                            { title: 'Today\'s Classes', val: '3', icon: '📅' },
-                            { title: 'Upcoming Exams', val: '3', icon: '🧪' },
-                            { title: 'Unread Notifs', val: '5', icon: '🔔' },
-                          ].map((c, i) => (
-                            <div key={i} className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-1">
-                              <div className="flex justify-between text-[10px] text-slate-400"><span>{c.title}</span><span>{c.icon}</span></div>
-                              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">{c.val}</h3>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* ROW 2: QUICK ACTIONS */}
-                        <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-3">
-                          <h3 className="text-xs font-extrabold uppercase text-slate-500">Row 2 – Executive Quick Actions</h3>
-                          <div className="flex flex-wrap items-center gap-2.5">
-                            {CAN_ADMIT_STUDENTS && (
-                              <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200">➕ Add Student</button>
-                            )}
-                            <button onClick={() => notify('Attendance Recorded')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">✅ Take Attendance</button>
-                            <button onClick={() => notify('Marks Entry')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">📝 Enter Marks</button>
-                            <button onClick={() => notify('Assignment Created')} className="px-3.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-200">📚 Create Assignment</button>
-                          </div>
-                        </div>
-
-                        {/* ROW 3 & 4: TIMETABLE & DONUT CHART */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-4">
-                            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">📅 Today's Timetable Schedule</h3>
-                            <table className="w-full text-left text-xs">
-                              <thead className="bg-slate-50 text-slate-400 font-bold"><tr><th className="p-2">Time</th><th className="p-2">Class</th><th className="p-2">Subject</th><th className="p-2">Room</th></tr></thead>
-                              <tbody>
-                                <tr><td className="p-2 font-bold text-indigo-600">9:00 AM</td><td className="p-2 font-bold">Grade 10 A</td><td className="p-2">Mathematics</td><td className="p-2 font-bold text-emerald-600">Room 201</td></tr>
-                                <tr><td className="p-2 font-bold text-indigo-600">10:00 AM</td><td className="p-2 font-bold">Grade 9 B</td><td className="p-2">Science</td><td className="p-2 font-bold text-emerald-600">Room 305</td></tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-4">
-                            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">✅ Institutional Attendance Donut</h3>
-                            <div className="h-44 relative"><canvas id="attendanceDonutChart"></canvas></div>
-                          </div>
-                        </div>
+                    {/* 10 PRINCIPAL OVERVIEW CARDS */}
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Principal Executive Overview Cards</h2>
+                        <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-extrabold">
+                          🎓 Highest Academic Authority Scope
+                        </span>
                       </div>
-                    )}
 
-                    {/* 2. VICE PRINCIPAL DASHBOARD */}
-                    {IS_VICE_PRINCIPAL && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Vice Principal Academic & Supervision Dashboard</h2>
-                          <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">⚖️ Vice Principal Context</span>
-                        </div>
-
-                        {/* 10 VP OVERVIEW CARDS */}
-                        <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
-                          {[
-                            { title: 'Total Students', val: '1,284', icon: '👨‍🎓' },
-                            { title: 'Total Teachers', val: '86', icon: '👨‍🏫' },
-                            { title: 'Classes Today', val: '12', icon: '🏫' },
-                            { title: 'Attendance Today', val: '96.4%', icon: '✅' },
-                            { title: 'Pending Attendance', val: '3 Classes', icon: '⏳' },
-                            { title: 'Upcoming Exams', val: '3', icon: '🧪' },
-                            { title: 'Pending Assignments', val: '14', icon: '📝' },
-                            { title: 'Discipline Cases', val: '2 Active', icon: '⚖️' },
-                            { title: 'New Admissions', val: '42', icon: '➕' },
-                            { title: 'Notices', val: '5 Active', icon: '🔔' },
-                          ].map((c, i) => (
-                            <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-1">
-                              <div className="flex justify-between text-[10px] text-slate-400"><span>{c.title}</span><span>{c.icon}</span></div>
-                              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{c.val}</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+                        {[
+                          { title: 'Total Students', val: '1,284', icon: '👨‍🎓' },
+                          { title: 'Total Teachers', val: '86', icon: '👨‍🏫' },
+                          { title: 'Total Classes', val: '12', icon: '🏫' },
+                          { title: 'Attendance Today', val: '96.4%', icon: '📅' },
+                          { title: 'Upcoming Exams', val: '3', icon: '📝' },
+                          { title: 'Student Performance', val: '88.5%', icon: '📊' },
+                          { title: 'Fee Collection Summary', val: '$64,000', icon: '💰' },
+                          { title: 'Active Notices', val: '5', icon: '📢' },
+                          { title: 'Today\'s Birthdays', val: '2', icon: '🎂' },
+                          { title: 'Discipline Cases', val: '2 Active', icon: '🚨' },
+                        ].map((c, i) => (
+                          <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
+                            <div className="flex justify-between text-[10px] text-slate-400">
+                              <span className="truncate">{c.title}</span>
+                              <span>{c.icon}</span>
                             </div>
-                          ))}
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-3">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white">👨‍🏫 Teacher Supervision & Leave Approvals</h3>
-                            <div className="p-3 bg-amber-50 rounded-xl flex justify-between items-center text-xs">
-                              <div><p className="font-bold">Emily Watson (Mathematics)</p><p className="text-slate-500">Medical Leave Request (Aug 5 - Aug 7)</p></div>
-                              <button onClick={() => notify('Approved Teacher Leave')} className="px-3 py-1 bg-emerald-600 text-white rounded-lg font-bold">Approve</button>
-                            </div>
+                            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{c.val}</h3>
                           </div>
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-3">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white">⚖️ Student Discipline Cases</h3>
-                            <div className="p-3 bg-rose-50 rounded-xl flex justify-between items-center text-xs">
-                              <div><p className="font-bold text-rose-900">Lucas Davis (Grade 11-B)</p><p className="text-rose-700">Classroom Disturbance Logged</p></div>
-                              <button onClick={() => notify('Counseling Session Scheduled')} className="px-3 py-1 bg-rose-600 text-white rounded-lg font-bold">Counseling</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 3. ACCOUNTANT DASHBOARD */}
-                    {IS_ACCOUNTANT && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Accountant Financial Operations Dashboard</h2>
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">💵 Financial Operations Context</span>
-                        </div>
-
-                        {/* 10 FINANCIAL CARDS */}
-                        <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
-                          {[
-                            { title: 'Today\'s Fee Collection', val: '$4,500', icon: '💰' },
-                            { title: 'Monthly Revenue', val: '$64,000', icon: '📈' },
-                            { title: 'Pending Fees', val: '$5,200', icon: '⏳' },
-                            { title: 'Overdue Payments', val: '$1,800', icon: '🚨' },
-                            { title: 'Total Students Paid', val: '1,210', icon: '👨‍🎓' },
-                            { title: 'Students with Due', val: '38', icon: '🎒' },
-                            { title: 'Scholarships Granted', val: '$12,000', icon: '🎓' },
-                            { title: 'Discounts Applied', val: '$2,400', icon: '💸' },
-                            { title: 'Refund Requests', val: '2 Pending', icon: '↩️' },
-                            { title: 'Financial Notifs', val: '6 Deadlines', icon: '🔔' },
-                          ].map((c, i) => (
-                            <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-1">
-                              <div className="flex justify-between text-[10px] text-slate-400"><span>{c.title}</span><span>{c.icon}</span></div>
-                              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{c.val}</h3>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* 8 ACCOUNTANT QUICK ACTIONS */}
-                        <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl space-y-3">
-                          <h3 className="text-xs font-extrabold uppercase text-slate-500">Accountant Financial Quick Actions</h3>
-                          <div className="flex flex-wrap items-center gap-2.5">
-                            <button onClick={() => notify('Collect Fee Window Opened')} className="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold">➕ Collect Fee</button>
-                            <button onClick={() => notify('Generating Invoice PDF...')} className="px-3.5 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold">📄 Generate Invoice</button>
-                            <button onClick={() => notify('Printing Receipt...')} className="px-3.5 py-1.5 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border">Receipt</button>
-                            <button onClick={() => notify('Scholarships Applied')} className="px-3.5 py-1.5 bg-purple-50 text-purple-700 rounded-xl text-xs font-bold border">Apply Scholarship</button>
-                          </div>
-                        </div>
-
-                        <div className="h-56 p-6 bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl relative">
-                          <canvas id="accountantRevenueChart"></canvas>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 4. OTHER ROLES (TEACHER, STUDENT, PARENT, LIBRARIAN, RECEPTIONIST) */}
-                    {!IS_PRINCIPAL_EXECUTIVE && !IS_VICE_PRINCIPAL && !IS_ACCOUNTANT && (
-                      <div className="p-8 rounded-3xl bg-slate-900 text-white space-y-4 shadow-xl">
-                        <div className="flex items-center gap-3">
-                          <span className="text-4xl">{currentUser.avatar}</span>
-                          <div>
-                            <h2 className="text-2xl font-extrabold">{currentRole.replace('_', ' ')} Workspace</h2>
-                            <p className="text-xs text-slate-400 mt-1">Logged in as {currentUser.name} ({currentUser.email})</p>
-                          </div>
-                        </div>
-                        <p className="text-xs text-slate-300">Welcome to your role portal! Access your assigned daily rosters, schedules, and notifications above.</p>
-                      </div>
-                    )}
-
-                  </div>
-                )}
-
-                {/* USER DIRECTORY TAB (ALL 10 ROLES SWITCHER) */}
-                {currentTab === 'users' && (
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">System User Accounts & 10 Role Portals</h2>
-                        <p className="text-xs text-slate-500">Directory of pre-seeded accounts</p>
+                        ))}
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b">
-                          <tr><th className="p-3.5">User Profile</th><th className="p-3.5">Role</th><th className="p-3.5">Email</th><th className="p-3.5 text-right">Switch Portal Context</th></tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                          {ROLES.map((r) => {
-                            const prof = ROLE_USER_PROFILES[r.code];
-                            const isActive = currentRole === r.code;
-                            return (
-                              <tr key={r.code} className={`hover:bg-slate-50 ${isActive ? 'bg-indigo-50/50' : ''}`}>
-                                <td className="p-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                                  <span className="text-lg">{prof.avatar}</span> <span>{prof.name}</span>
-                                </td>
-                                <td className="p-3.5 font-semibold text-indigo-600">{r.name}</td>
-                                <td className="p-3.5 font-mono text-[11px] text-slate-500">{prof.email}</td>
-                                <td className="p-3.5 text-right">
-                                  <button onClick={() => { setCurrentRole(r.code); setCurrentTab('dashboard'); notify(`Switched Context to ${r.name}`); }} className={`px-3.5 py-1 rounded-lg text-xs font-bold ${isActive ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
-                                    {isActive ? '✓ Active Context' : `Switch to ${r.name}`}
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                    {/* 8 PRINCIPAL QUICK ACTIONS BAR */}
+                    <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
+                      <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Principal Executive Quick Actions</h3>
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">➕ Admit New Student</button>
+                        <button onClick={() => notify('Class Teacher Assigned!')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">👨‍🏫 Assign Class Teacher</button>
+                        <button onClick={() => notify('Approved Faculty Leave Request!')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">✅ Approve Leave Request</button>
+                        <button onClick={() => notify('Exam Schedule Published!')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">📅 Create Exam Schedule</button>
+                        <button onClick={() => notify('Q3 Marks & Results Published!')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">📝 Publish Results</button>
+                        <button onClick={() => notify('Publishing Notice to Parent Portal...')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200">📢 Publish Notice</button>
+                        <button onClick={() => notify('Opening Performance Analytics...')} className="px-3.5 py-1.5 rounded-xl bg-cyan-50 text-cyan-700 text-xs font-bold border border-cyan-200">📊 View School Performance</button>
+                        <button onClick={() => notify('Exporting Comprehensive Institutional Reports...')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300">📄 Generate Reports</button>
+                      </div>
                     </div>
+
+                    {/* ACADEMIC PERFORMANCE & DISCIPLINE PANELS */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>📊</span> School Academic Performance Analytics
+                          </h3>
+                        </div>
+                        <div className="h-56 relative"><canvas id="principalPerformanceChart"></canvas></div>
+                      </div>
+
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🚨</span> Active Discipline & Counseling Cases
+                          </h3>
+                          <button onClick={() => notify('New Incident Logged')} className="text-xs font-bold text-rose-600 hover:underline">+ File Incident</button>
+                        </div>
+                        <div className="space-y-3 text-xs">
+                          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 flex justify-between items-center">
+                            <div><p className="font-bold text-rose-900 dark:text-rose-200">Lucas Davis (Grade 11-B)</p><p className="text-rose-700 dark:text-rose-300">Unexcused Absence & Behavioral Incident</p></div>
+                            <button onClick={() => notify('Discipline Warning Issued')} className="px-3 py-1 bg-rose-600 text-white rounded-lg font-bold">Issue Warning</button>
+                          </div>
+                          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 flex justify-between items-center">
+                            <div><p className="font-bold text-amber-900 dark:text-amber-200">Ethan Hunt (Grade 10-A)</p><p className="text-amber-700 dark:text-amber-300">Late Submission Warning</p></div>
+                            <button onClick={() => notify('Counseling Session Scheduled')} className="px-3 py-1 bg-amber-600 text-white rounded-lg font-bold">Schedule Counseling</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* PRINCIPAL VS SUPER ADMIN SEPARATION PERMISSIONS MATRIX */}
+                    <div className="p-6 bg-slate-900 text-white rounded-3xl space-y-4 shadow-xl border border-slate-800">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-extrabold flex items-center gap-2 text-purple-400">
+                          <span>🛡️</span> Principal vs Super Admin Separation Policy Matrix
+                        </h3>
+                        <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-extrabold border border-purple-500/30">
+                          Academic Governance Active
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
+                          <p className="font-extrabold text-emerald-400">✅ Principal Operational & Academic Scope:</p>
+                          <p className="text-slate-300">• Admit Students, Approve Transfers, Promotions & Graduations</p>
+                          <p className="text-slate-300">• Assign Class Teachers & Subjects, Approve Faculty Leave</p>
+                          <p className="text-slate-300">• Academic Years, Classes, Timetables & Lesson Plans</p>
+                          <p className="text-slate-300">• Exam Schedules, Marks Review, Publish Results & Report Cards</p>
+                          <p className="text-slate-300">• View-Only Fee Summaries & Export Reports (PDF/Excel/CSV)</p>
+                        </div>
+                        <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
+                          <p className="font-extrabold text-rose-400">🔒 Restricted Technical & System Administration:</p>
+                          <p className="text-slate-400">• Cannot Create or Delete User Roles & Permissions</p>
+                          <p className="text-slate-400">• Cannot Access System Database Backups or API Integrations</p>
+                          <p className="text-slate-400">• Cannot Manage Financial Payroll (Reserved for Accountant)</p>
+                          <p className="text-slate-400">• Cannot Permanently Delete Critical Records or Super Admins</p>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 )}
 
                 {/* STUDENTS DIRECTORY TAB */}
                 {currentTab === 'students' && (
                   <div className="space-y-6">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Students Directory</h2>
-                        <p className="text-xs text-slate-500">Pathaibhara Institutional Roster</p>
+                        <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Students & Admissions Directory</h2>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Principal Academic Enrollment & Student Records</p>
                       </div>
+
                       {CAN_ADMIT_STUDENTS && (
-                        <button onClick={() => setShowAdmissionModal(true)} className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md">+ Add Student Details</button>
+                        <button onClick={() => setShowAdmissionModal(true)} className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2">
+                          <span>➕</span> + Admit New Student (Principal Form)
+                        </button>
                       )}
                     </div>
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 text-slate-400 font-bold border-b">
-                          <tr><th className="p-3">Name</th><th className="p-3">Class</th><th className="p-3">House</th><th className="p-3">Emergency</th></tr>
+
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
+                      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b">
+                          <tr>
+                            <th className="p-3.5">Student Name</th><th className="p-3.5">Admission / Roll</th><th className="p-3.5">Class / Section</th><th className="p-3.5">House</th><th className="p-3.5">Medical Alert</th><th className="p-3.5 text-right">Actions</th>
+                          </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 font-medium">
-                          {students.map(s => (
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                          {students.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).map(s => (
                             <tr key={s.id}>
-                              <td className="p-3 font-bold text-slate-900 dark:text-white">{s.name}</td>
-                              <td className="p-3 font-semibold text-indigo-600">{s.class}</td>
-                              <td className="p-3"><span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">{s.house}</span></td>
-                              <td className="p-3 text-rose-600 font-semibold">{s.emergency}</td>
+                              <td className="p-3.5 font-bold text-slate-900 dark:text-white">{s.name}<br/><span className="text-[10px] text-slate-400">{s.email}</span></td>
+                              <td className="p-3.5">{s.admission}<br/><span className="text-[10px] text-slate-400">Roll: {s.roll}</span></td>
+                              <td className="p-3.5 font-semibold text-purple-600">{s.class}</td>
+                              <td className="p-3.5"><span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">{s.house}</span></td>
+                              <td className="p-3.5 text-rose-600 font-semibold">{s.allergies !== 'None' ? `⚠️ ${s.allergies}` : 'None'}</td>
+                              <td className="p-3.5 text-right"><button onClick={() => setViewStudent(s)} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-semibold">View Profile</button></td>
                             </tr>
                           ))}
                         </tbody>
@@ -598,12 +582,37 @@
                 )}
               </main>
 
+              {/* FOOTER STATISTICS */}
               <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-8 py-3.5 flex flex-wrap items-center justify-between text-xs text-slate-500 font-semibold">
-                <span>Pathaibhara SMS © 2026 • Multi-Role Context Enabled</span>
-                <span className="text-[11px] text-indigo-600 font-bold">Active Role: {currentRole}</span>
+                <div className="flex flex-wrap items-center gap-6">
+                  <span>👨‍🎓 Total Students: <strong className="text-slate-900 dark:text-white">1,284</strong></span>
+                  <span>👨‍🏫 Teachers: <strong className="text-slate-900 dark:text-white">86</strong></span>
+                  <span>✅ Attendance: <strong className="text-emerald-600">96.4%</strong></span>
+                  <span>💰 Fee Summary: <strong className="text-purple-600">$64,000 (View Only)</strong></span>
+                </div>
+                <p className="text-[11px] text-slate-400">Pathaibhara SMS © 2026</p>
               </footer>
             </div>
           </div>
+
+          {/* 11-SECTION ADMISSION MODAL */}
+          {showAdmissionModal && CAN_ADMIT_STUDENTS && (
+            <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+                <div className="p-5 border-b flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-lg">➕</div>
+                    <div><h3 className="text-base font-extrabold text-slate-900 dark:text-white">Principal Student Admission Wizard</h3><p className="text-xs text-slate-400">11-Category Registration Form</p></div>
+                  </div>
+                  <button onClick={() => setShowAdmissionModal(false)} className="p-2 rounded-xl text-slate-400">✕</button>
+                </div>
+                <form onSubmit={handleAddStudentSubmit} className="p-6 flex-1 overflow-y-auto space-y-4 text-xs">
+                  <p className="font-bold text-purple-600">Principal Authorized Admission Active</p>
+                  <button type="submit" className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold">✓ Submit Enrollment</button>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
