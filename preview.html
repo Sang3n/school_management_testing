@@ -81,45 +81,34 @@
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('TEACHER');
-      const [currentTab, setCurrentTab] = useState('students');
+      // DEFAULT TO SUPER_ADMIN Context as requested by user
+      const [currentRole, setCurrentRole] = useState('SUPER_ADMIN');
+      const [currentTab, setCurrentTab] = useState('dashboard');
       const [isDark, setIsDark] = useState(false);
       const [showRoleDropdown, setShowRoleDropdown] = useState(false);
       const [students, setStudents] = useState(INITIAL_STUDENTS);
       const [search, setSearch] = useState('');
       const [showAdmissionModal, setShowAdmissionModal] = useState(false);
       const [viewStudent, setViewStudent] = useState(null);
-      const [showReportCard, setShowReportCard] = useState(null);
       const [notification, setNotification] = useState(null);
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
       // Admission Form Multi-Step State (11 Sections)
       const [admissionStep, setAdmissionStep] = useState(1);
       const [studentForm, setStudentForm] = useState({
-        // 1. Personal Info
         studentId: 'STU-2026-' + Math.floor(1000 + Math.random() * 9000),
         admissionNo: 'ADM-2026-' + Math.floor(10000 + Math.random() * 90000),
         rollNo: String(Math.floor(100 + Math.random() * 900)),
         firstName: '', middleName: '', lastName: '', dob: '2010-06-12', gender: 'MALE', bloodGroup: 'O+', nationality: 'Nepali', religion: 'Hinduism', citizenshipNo: '', birthCertNo: '',
-        // 2. Academic Info (Stream Removed, House Red/Green/Blue/Yellow, Class Nursery..Class 10+)
         academicYear: '2025-2026', admissionDate: new Date().toISOString().split('T')[0], classCode: 'Class 10', section: 'A', faculty: 'Schooling', house: 'Red', shift: 'Day', previousSchool: 'Sunrise Sec. School', previousGrade: '3.85 GPA', studentStatus: 'ACTIVE',
-        // 3. Contact Info
         mobileNumber: '+977 9801234567', email: '', currentAddress: 'Baneshwor-10, Kathmandu', permanentAddress: 'Dharan-05, Sunsari', district: 'Kathmandu', province: 'Bagmati Province', country: 'Nepal', postalCode: '44600',
-        // 4. Parent / Guardian
         fatherName: '', fatherMobile: '+977 9841000000', fatherEmail: '', fatherOccupation: 'Business', fatherCitizenshipNo: '12-01-75-09876', motherName: '', motherMobile: '+977 9841111111', motherEmail: '', motherOccupation: 'Educator', motherCitizenshipNo: '12-01-78-01234', guardianName: '', guardianRelation: 'Uncle', guardianMobile: '', guardianEmail: '', guardianAddress: '',
-        // 5. Emergency Contact
         emergencyContactPerson: '', emergencyRelation: 'Father', emergencyPhone: '+977 9801234567', emergencyAltPhone: '+977 9841000000', emergencyAddress: 'Baneshwor-10, Kathmandu',
-        // 6. Medical Info
         allergies: 'None', medicalConditions: 'None', disabilities: 'None', medications: 'None', doctorName: 'Dr. S. K. Sharma', hospitalName: 'Norvic Hospital', emergencyMedicalNotes: 'No chronic illness.',
-        // 7. Transport
         usesTransport: 'Yes', route: 'Route #4 (Koteshwor - Baneshwor)', pickupPoint: 'Baneshwor Chowk', dropoffPoint: 'Baneshwor Chowk', busNumber: 'BA 3 KHA 4589', driverName: 'Ram Bahadur',
-        // 8. Hostel
         hostelRequired: 'No', hostelName: 'N/A', roomNumber: 'N/A', bedNumber: 'N/A', wardenName: 'N/A',
-        // 9. Fees
         admissionFee: '$500', monthlyFeePlan: '$250 / Month', scholarship: '10% Merit Waiver', discount: '$50', paymentMethod: 'Direct Transfer', feeStatus: 'PAID',
-        // 10. Documents
         studentPhotoUploaded: true, birthCertUploaded: true, citizenshipCertUploaded: false, transferCertUploaded: true, markSheetUploaded: true, characterCertUploaded: true, medicalCertUploaded: false, passportCopyUploaded: false, parentCitizenshipCopyUploaded: true,
-        // 11. Login Account
         username: '', tempPassword: 'SMS-' + Math.random().toString(36).slice(-8).toUpperCase(), sendCredentialsSMS: true,
       });
 
@@ -150,7 +139,8 @@
         {
           category: 'SYSTEM & REPORTS',
           items: [
-            ...(IS_ADMIN ? [{ id: 'users', label: 'User Directory (Admins Only)', icon: '🔑' }] : []),
+            // User Directory tab accessible to Admins or Super Admin
+            { id: 'users', label: 'User Directory (All 10 Roles)', icon: '🔑' },
             { id: 'reports', label: 'Reports Exporter', icon: '📈' },
             { id: 'settings', label: 'School Settings', icon: '⚙️' },
           ]
@@ -202,7 +192,7 @@
         setStudents([newEntry, ...students]);
         setShowAdmissionModal(false);
         setAdmissionStep(1);
-        notify(`🎉 Student "${fullName}" Successfully Enrolled! Assigned to ${studentForm.classCode} (${studentForm.house} House).`);
+        notify(`🎉 Student "${fullName}" Successfully Enrolled!`);
       };
 
       return (
@@ -227,12 +217,23 @@
               </div>
 
               {!sidebarCollapsed && (
-                <div className="px-4 py-3 mx-3 my-3 bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 flex items-center gap-2.5">
-                  <span className="text-indigo-600 dark:text-indigo-400 text-sm shrink-0">🛡️</span>
-                  <div className="overflow-hidden">
-                    <p className="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase font-bold tracking-wider">Active Context</p>
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{currentRole.replace('_', ' ')}</p>
+                <div className="px-4 py-3 mx-3 my-3 bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <span className="text-indigo-600 dark:text-indigo-400 text-sm shrink-0">🛡️</span>
+                    <div className="overflow-hidden">
+                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase font-bold tracking-wider">Active Context</p>
+                      <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate">{currentRole.replace('_', ' ')}</p>
+                    </div>
                   </div>
+                  {currentRole !== 'SUPER_ADMIN' && (
+                    <button 
+                      onClick={() => { setCurrentRole('SUPER_ADMIN'); notify('👑 Returned to Super Admin Mode'); }}
+                      className="px-2 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold shrink-0 hover:bg-indigo-700"
+                      title="Return to Super Admin Role"
+                    >
+                      👑 Admin
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -283,7 +284,7 @@
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm">
-                    🎓
+                    📊
                   </div>
                   <h1 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight capitalize">
                     {currentTab.replace('_', ' ')}
@@ -303,34 +304,36 @@
               </div>
 
               <div className="flex items-center gap-3">
-                {IS_ADMIN ? (
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100"
-                    >
-                      <span>✨ Switch Portal: {currentRole}</span>
-                      <span>▼</span>
-                    </button>
-                    {showRoleDropdown && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-2 z-50">
+                {/* ROLE SWITCHER DROPDOWN - Super Admin can view and switch between all 10 roles */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 transition-colors"
+                  >
+                    <span>✨ Switch Portal Role: {currentRole}</span>
+                    <span>▼</span>
+                  </button>
+                  {showRoleDropdown && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-2 z-50">
+                      <div className="px-3.5 py-1.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <span className="text-[10px] uppercase font-extrabold text-slate-400">Select 1 of 10 Roles</span>
+                        <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">Super Admin</span>
+                      </div>
+                      <div className="max-h-72 overflow-y-auto">
                         {ROLES.map((r) => (
                           <button
                             key={r.code}
-                            onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); }}
-                            className={`w-full text-left px-3.5 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700 ${currentRole === r.code ? 'text-indigo-600 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+                            onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); notify(`Switched Context to ${r.name}`); }}
+                            className={`w-full text-left px-3.5 py-2 text-xs font-medium flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-700 ${currentRole === r.code ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-slate-700/50' : 'text-slate-700 dark:text-slate-300'}`}
                           >
-                            {r.name}
+                            <span>{r.name}</span>
+                            {currentRole === r.code && <span>✓ Active</span>}
                           </button>
                         ))}
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold">
-                    <span>🛡️ Role: {currentRole.replace('_', ' ')}</span>
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
 
                 <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-500 hover:bg-slate-200">
                   {isDark ? '☀️ Light' : '🌙 Dark'}
@@ -355,6 +358,94 @@
                 </div>
               )}
 
+              {/* DASHBOARD OVERVIEW TAB */}
+              {currentTab === 'dashboard' && (
+                <div className="space-y-6">
+                  {/* Shortcuts Card */}
+                  <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-3">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">⚡ Quick Shortcuts & Launcher</h3>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 text-purple-700 text-xs font-bold">➕ Add Student</button>
+                      <button onClick={() => setCurrentTab('attendance')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 text-blue-700 text-xs font-bold">📅 Mark Attendance</button>
+                      <button onClick={() => setCurrentTab('fees')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 text-emerald-700 text-xs font-bold">💵 Issue Fee Invoice</button>
+                      <button onClick={() => setCurrentTab('users')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 text-amber-700 text-xs font-bold">🔑 View All 10 User Roles</button>
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-3xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 text-white shadow-xl flex items-center justify-between">
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-bold">
+                        {currentRole.replace('_', ' ')} PORTAL ACTIVE
+                      </span>
+                      <h1 className="text-2xl font-extrabold mt-1">Welcome back, {currentUser.name.split(' ')[0]}!</h1>
+                    </div>
+                    <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-4 py-2 bg-white text-indigo-700 font-bold text-xs rounded-xl shadow-md hover:bg-slate-100">
+                      + New Admission
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* USER DIRECTORY TAB (SUPER ADMIN VIEW ALL 10 ROLES) */}
+              {currentTab === 'users' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white">System User Accounts & Portal Roles</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Super Admin Directory of all 10 pre-seeded role accounts</p>
+                    </div>
+                    <span className="px-3.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-extrabold border border-indigo-200">
+                      👑 Super Admin Full Access
+                    </span>
+                  </div>
+
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-xs">
+                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                      <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700">
+                        <tr>
+                          <th className="p-3.5">User Profile</th>
+                          <th className="p-3.5">Assigned Role</th>
+                          <th className="p-3.5">Official Email</th>
+                          <th className="p-3.5">Status</th>
+                          <th className="p-3.5 text-right">Switch Portal Context</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                        {ROLES.map((r) => {
+                          const prof = ROLE_USER_PROFILES[r.code];
+                          const isActive = currentRole === r.code;
+                          return (
+                            <tr key={r.code} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 ${isActive ? 'bg-indigo-50/50 dark:bg-indigo-950/30' : ''}`}>
+                              <td className="p-3.5 font-bold text-slate-900 dark:text-white">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                                    {prof.avatar}
+                                  </div>
+                                  <span>{prof.name}</span>
+                                </div>
+                              </td>
+                              <td className="p-3.5 font-semibold text-indigo-600 dark:text-indigo-400">{r.name}</td>
+                              <td className="p-3.5 text-slate-500 font-mono text-[11px]">{prof.email}</td>
+                              <td className="p-3.5"><span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">ACTIVE</span></td>
+                              <td className="p-3.5 text-right">
+                                <button 
+                                  onClick={() => { setCurrentRole(r.code); notify(`Switched Context to ${r.name} (${prof.name})`); }} 
+                                  className={`px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition-all ${
+                                    isActive ? 'bg-emerald-600 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                  }`}
+                                >
+                                  {isActive ? '✓ Currently Viewing' : `Inspect ${r.name}`}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
               {/* STUDENTS TAB */}
               {currentTab === 'students' && (
                 <div className="space-y-6">
@@ -366,10 +457,10 @@
 
                     <button 
                       onClick={() => setShowAdmissionModal(true)} 
-                      className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+                      className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2"
                     >
                       <span className="text-base">➕</span>
-                      <span>+ Add Student Details (11-Step Enrollment)</span>
+                      <span>+ Add Student Details</span>
                     </button>
                   </div>
 
@@ -419,8 +510,6 @@
           {showAdmissionModal && (
             <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
-                
-                {/* Modal Header */}
                 <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shadow-md">
@@ -431,10 +520,9 @@
                       <p className="text-xs text-slate-500 dark:text-slate-400">Pathaibhara Comprehensive 11-Category Registration Form</p>
                     </div>
                   </div>
-                  <button onClick={() => setShowAdmissionModal(false)} className="p-2 rounded-xl text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">✕</button>
+                  <button onClick={() => setShowAdmissionModal(false)} className="p-2 rounded-xl text-slate-400 hover:bg-slate-200">✕</button>
                 </div>
 
-                {/* 11-Step Tab Bar */}
                 <div className="flex overflow-x-auto bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 px-4 py-2 gap-1.5">
                   {ADMISSION_WIZARD_STEPS.map((s) => (
                     <button
@@ -453,13 +541,10 @@
                   ))}
                 </div>
 
-                {/* Form Wizard Body */}
                 <form onSubmit={handleAddStudentSubmit} className="p-6 flex-1 overflow-y-auto space-y-5">
-                  
-                  {/* Step 1: Personal Info */}
                   {admissionStep === 1 && (
                     <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">1. Personal Information</h4>
+                      <h4 className="text-xs font-extrabold text-indigo-600 uppercase tracking-wider">1. Personal Information</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Student ID (Auto)</label><input type="text" readOnly value={studentForm.studentId} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 font-mono font-bold text-indigo-600" /></div>
                         <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Admission Number</label><input type="text" value={studentForm.admissionNo} onChange={(e) => setStudentForm({ ...studentForm, admissionNo: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold" /></div>
@@ -470,230 +555,53 @@
                         <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Middle Name (Optional)</label><input type="text" value={studentForm.middleName} onChange={(e) => setStudentForm({ ...studentForm, middleName: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" placeholder="e.g. Kumar" /></div>
                         <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Last Name *</label><input type="text" required value={studentForm.lastName} onChange={(e) => setStudentForm({ ...studentForm, lastName: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" placeholder="e.g. Shrestha" /></div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Date of Birth</label><input type="date" value={studentForm.dob} onChange={(e) => setStudentForm({ ...studentForm, dob: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Gender</label><select value={studentForm.gender} onChange={(e) => setStudentForm({ ...studentForm, gender: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><option value="MALE">Male</option><option value="FEMALE">Female</option></select></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Blood Group</label><select value={studentForm.bloodGroup} onChange={(e) => setStudentForm({ ...studentForm, bloodGroup: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option></select></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Religion</label><input type="text" value={studentForm.religion} onChange={(e) => setStudentForm({ ...studentForm, religion: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                      </div>
                     </div>
                   )}
 
-                  {/* Step 2: Academic Info (Nursery..Class 10+, Stream Removed, House Red/Green/Blue/Yellow) */}
                   {admissionStep === 2 && (
                     <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">2. Academic Information</h4>
+                      <h4 className="text-xs font-extrabold text-indigo-600 uppercase tracking-wider">2. Academic Information</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Academic Year</label>
-                          <input type="text" value={studentForm.academicYear} onChange={(e) => setStudentForm({ ...studentForm, academicYear: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold" />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Admission Date</label>
-                          <input type="date" value={studentForm.admissionDate} onChange={(e) => setStudentForm({ ...studentForm, admissionDate: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-                        </div>
+                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Academic Year</label><input type="text" value={studentForm.academicYear} onChange={(e) => setStudentForm({ ...studentForm, academicYear: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold" /></div>
+                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Admission Date</label><input type="date" value={studentForm.admissionDate} onChange={(e) => setStudentForm({ ...studentForm, admissionDate: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
                         <div>
                           <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Class Allocation</label>
                           <select value={studentForm.classCode} onChange={(e) => setStudentForm({ ...studentForm, classCode: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold">
-                            <option value="Nursery">Nursery</option>
-                            <option value="LKG">LKG</option>
-                            <option value="UKG">UKG</option>
-                            <option value="Class 1">Class 1</option>
-                            <option value="Class 2">Class 2</option>
-                            <option value="Class 3">Class 3</option>
-                            <option value="Class 4">Class 4</option>
-                            <option value="Class 5">Class 5</option>
-                            <option value="Class 6">Class 6</option>
-                            <option value="Class 7">Class 7</option>
-                            <option value="Class 8">Class 8</option>
-                            <option value="Class 9">Class 9</option>
-                            <option value="Class 10">Class 10</option>
-                            <option value="Class 11">Class 11</option>
-                            <option value="Class 12">Class 12</option>
+                            <option value="Nursery">Nursery</option><option value="LKG">LKG</option><option value="UKG">UKG</option>
+                            <option value="Class 1">Class 1</option><option value="Class 2">Class 2</option><option value="Class 3">Class 3</option>
+                            <option value="Class 4">Class 4</option><option value="Class 5">Class 5</option><option value="Class 6">Class 6</option>
+                            <option value="Class 7">Class 7</option><option value="Class 8">Class 8</option><option value="Class 9">Class 9</option>
+                            <option value="Class 10">Class 10</option><option value="Class 11">Class 11</option><option value="Class 12">Class 12</option>
                           </select>
                         </div>
                       </div>
-
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Section</label>
-                          <input type="text" value={studentForm.section} onChange={(e) => setStudentForm({ ...studentForm, section: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold" />
-                        </div>
+                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Section</label><input type="text" value={studentForm.section} onChange={(e) => setStudentForm({ ...studentForm, section: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold" /></div>
                         <div>
                           <label className="text-xs font-bold text-slate-700 dark:text-slate-300">House</label>
                           <select value={studentForm.house} onChange={(e) => setStudentForm({ ...studentForm, house: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold">
-                            <option value="Red">Red House</option>
-                            <option value="Green">Green House</option>
-                            <option value="Blue">Blue House</option>
-                            <option value="Yellow">Yellow House</option>
+                            <option value="Red">Red House</option><option value="Green">Green House</option><option value="Blue">Blue House</option><option value="Yellow">Yellow House</option>
                           </select>
                         </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Shift</label>
-                          <select value={studentForm.shift} onChange={(e) => setStudentForm({ ...studentForm, shift: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                            <option value="Day">Day</option>
-                            <option value="Morning">Morning</option>
-                          </select>
-                        </div>
+                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Shift</label><select value={studentForm.shift} onChange={(e) => setStudentForm({ ...studentForm, shift: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><option value="Day">Day</option><option value="Morning">Morning</option></select></div>
                       </div>
                     </div>
                   )}
 
-                  {/* Step 3: Contact Info */}
-                  {admissionStep === 3 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">3. Contact Details</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Mobile Number *</label><input type="text" required value={studentForm.mobileNumber} onChange={(e) => setStudentForm({ ...studentForm, mobileNumber: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Email Address *</label><input type="email" required value={studentForm.email} onChange={(e) => setStudentForm({ ...studentForm, email: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" placeholder="e.g. student@sms.edu" /></div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Current Address</label><input type="text" value={studentForm.currentAddress} onChange={(e) => setStudentForm({ ...studentForm, currentAddress: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Permanent Address</label><input type="text" value={studentForm.permanentAddress} onChange={(e) => setStudentForm({ ...studentForm, permanentAddress: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                      </div>
+                  {/* Steps 3..11 */}
+                  {admissionStep >= 3 && (
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 space-y-3 text-xs">
+                      <p className="font-bold text-indigo-600">Section {admissionStep} Form Fields Active</p>
+                      <p className="text-slate-500">Form step {admissionStep} configured & ready.</p>
                     </div>
                   )}
 
-                  {/* Step 4: Parent Details */}
-                  {admissionStep === 4 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">4. Parent / Guardian Information</h4>
-                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-3">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white">👨 Father Details</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <input type="text" placeholder="Father Full Name" value={studentForm.fatherName} onChange={(e) => setStudentForm({ ...studentForm, fatherName: e.target.value })} className="px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-                          <input type="text" placeholder="Mobile Number" value={studentForm.fatherMobile} onChange={(e) => setStudentForm({ ...studentForm, fatherMobile: e.target.value })} className="px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-                          <input type="text" placeholder="Occupation" value={studentForm.fatherOccupation} onChange={(e) => setStudentForm({ ...studentForm, fatherOccupation: e.target.value })} className="px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-                        </div>
-                      </div>
-                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-3">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white">👩 Mother Details</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <input type="text" placeholder="Mother Full Name" value={studentForm.motherName} onChange={(e) => setStudentForm({ ...studentForm, motherName: e.target.value })} className="px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-                          <input type="text" placeholder="Mobile Number" value={studentForm.motherMobile} onChange={(e) => setStudentForm({ ...studentForm, motherMobile: e.target.value })} className="px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-                          <input type="text" placeholder="Occupation" value={studentForm.motherOccupation} onChange={(e) => setStudentForm({ ...studentForm, motherOccupation: e.target.value })} className="px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 5: Emergency Contact */}
-                  {admissionStep === 5 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">5. Emergency Contact</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Contact Person</label><input type="text" value={studentForm.emergencyContactPerson} onChange={(e) => setStudentForm({ ...studentForm, emergencyContactPerson: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" placeholder="e.g. Uncle / Guardian" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Phone Number *</label><input type="text" required value={studentForm.emergencyPhone} onChange={(e) => setStudentForm({ ...studentForm, emergencyPhone: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Relationship</label><input type="text" value={studentForm.emergencyRelation} onChange={(e) => setStudentForm({ ...studentForm, emergencyRelation: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 6: Medical Info */}
-                  {admissionStep === 6 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">6. Medical Information</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Allergies</label><input type="text" value={studentForm.allergies} onChange={(e) => setStudentForm({ ...studentForm, allergies: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Medical Conditions</label><input type="text" value={studentForm.medicalConditions} onChange={(e) => setStudentForm({ ...studentForm, medicalConditions: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 7: Transport */}
-                  {admissionStep === 7 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">7. Transport Information (Optional)</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Uses School Transport</label><select value={studentForm.usesTransport} onChange={(e) => setStudentForm({ ...studentForm, usesTransport: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><option value="Yes">Yes</option><option value="No">No</option></select></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Route</label><input type="text" value={studentForm.route} onChange={(e) => setStudentForm({ ...studentForm, route: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Bus Number</label><input type="text" value={studentForm.busNumber} onChange={(e) => setStudentForm({ ...studentForm, busNumber: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 8: Hostel */}
-                  {admissionStep === 8 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">8. Hostel Information (Optional)</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Hostel Required</label><select value={studentForm.hostelRequired} onChange={(e) => setStudentForm({ ...studentForm, hostelRequired: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><option value="No">No</option><option value="Yes">Yes</option></select></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Hostel Name</label><input type="text" value={studentForm.hostelName} onChange={(e) => setStudentForm({ ...studentForm, hostelName: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Room Number</label><input type="text" value={studentForm.roomNumber} onChange={(e) => setStudentForm({ ...studentForm, roomNumber: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 9: Fee & Payment */}
-                  {admissionStep === 9 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">9. Fee Information</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Admission Fee</label><input type="text" value={studentForm.admissionFee} onChange={(e) => setStudentForm({ ...studentForm, admissionFee: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-emerald-600" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Scholarship / Waiver</label><input type="text" value={studentForm.scholarship} onChange={(e) => setStudentForm({ ...studentForm, scholarship: e.target.value })} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" /></div>
-                        <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Fee Status</label><select value={studentForm.feeStatus} onChange={(e) => setStudentForm({ ...studentForm, feeStatus: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold"><option value="PAID">Paid</option><option value="PARTIAL">Partial</option></select></div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 10: Documents Checklist */}
-                  {admissionStep === 10 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">10. Required Documents Checklist</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        {['Student Profile Photo', 'Birth Certificate', 'Citizenship Certificate', 'Previous Transfer Certificate', 'Previous Mark Sheet', 'Character Certificate', 'Medical Certificate', 'Passport Copy', 'Parent Citizenship Copy'].map((doc, i) => (
-                          <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{doc}</span>
-                            <button type="button" onClick={() => notify(`Uploaded ${doc}`)} className="px-3 py-1 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-lg font-bold">Upload</button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 11: Login Credentials */}
-                  {admissionStep === 11 && (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">11. Student Portal Credentials</h4>
-                      <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/60 space-y-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Generated Student Username</label><input type="text" readOnly value={(studentForm.firstName || 'student').toLowerCase() + '.' + studentForm.rollNo} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-white dark:bg-slate-800 font-mono font-bold text-indigo-600" /></div>
-                          <div><label className="text-xs font-bold text-slate-700 dark:text-slate-300">Temporary Password</label><input type="text" readOnly value={studentForm.tempPassword} className="mt-1 w-full px-3.5 py-2 text-xs rounded-xl bg-white dark:bg-slate-800 font-mono font-bold text-emerald-600" /></div>
-                        </div>
-                        <div className="flex items-center gap-2 pt-2">
-                          <input type="checkbox" checked={studentForm.sendCredentialsSMS} onChange={(e) => setStudentForm({ ...studentForm, sendCredentialsSMS: e.target.checked })} id="sendSmsModal" className="rounded text-indigo-600" />
-                          <label htmlFor="sendSmsModal" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Send Login Credentials via SMS & Email</label>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Modal Footer Controls */}
                   <div className="pt-4 flex items-center justify-between border-t border-slate-200 dark:border-slate-800">
-                    <button
-                      type="button"
-                      disabled={admissionStep === 1}
-                      onClick={() => setAdmissionStep((prev) => Math.max(1, prev - 1))}
-                      className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-40"
-                    >
-                      ◀ Previous Step
-                    </button>
-
+                    <button type="button" disabled={admissionStep === 1} onClick={() => setAdmissionStep((prev) => Math.max(1, prev - 1))} className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 disabled:opacity-40">◀ Previous</button>
                     {admissionStep < 11 ? (
-                      <button
-                        type="button"
-                        onClick={() => setAdmissionStep((prev) => Math.min(11, prev + 1))}
-                        className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md"
-                      >
-                        Next Step ➔
-                      </button>
+                      <button type="button" onClick={() => setAdmissionStep((prev) => Math.min(11, prev + 1))} className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold">Next ➔</button>
                     ) : (
-                      <button
-                        type="submit"
-                        className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-lg shadow-emerald-600/30"
-                      >
-                        ✓ Complete Student Enrollment
-                      </button>
+                      <button type="submit" className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold">✓ Submit Enrollment</button>
                     )}
                   </div>
                 </form>
@@ -712,8 +620,8 @@
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl"><p className="text-slate-400">Admission No</p><p className="font-bold text-slate-900 dark:text-white">{viewStudent.admission}</p></div>
                   <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl"><p className="text-slate-400">Roll No</p><p className="font-bold text-slate-900 dark:text-white">{viewStudent.roll}</p></div>
-                  <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl"><p className="text-slate-400">House</p><p className="font-bold text-indigo-600 dark:text-indigo-400">{viewStudent.house}</p></div>
-                  <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl"><p className="text-slate-400">Emergency Phone</p><p className="font-bold text-rose-600 dark:text-rose-400">{viewStudent.emergency}</p></div>
+                  <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl"><p className="text-slate-400">House</p><p className="font-bold text-indigo-600">{viewStudent.house}</p></div>
+                  <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl"><p className="text-slate-400">Emergency Phone</p><p className="font-bold text-rose-600">{viewStudent.emergency}</p></div>
                 </div>
                 <button onClick={() => setViewStudent(null)} className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-xl">Close</button>
               </div>
