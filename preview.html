@@ -46,6 +46,19 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    const ROLE_USER_PROFILES = {
+      SUPER_ADMIN: { name: 'Alexander Vance', email: 'superadmin@sms.edu', avatar: 'A' },
+      SCHOOL_ADMIN: { name: 'Sarah Jenkins', email: 'admin@sms.edu', avatar: 'S' },
+      PRINCIPAL: { name: 'Dr. Robert Langdon', email: 'principal@sms.edu', avatar: 'R' },
+      VICE_PRINCIPAL: { name: 'Elena Rostova', email: 'viceprincipal@sms.edu', avatar: 'E' },
+      ACCOUNTANT: { name: 'Marcus Goldman', email: 'accountant@sms.edu', avatar: 'M' },
+      TEACHER: { name: 'Emily Watson', email: 'teacher@sms.edu', avatar: 'E' },
+      LIBRARIAN: { name: 'Arthur Pendelton', email: 'librarian@sms.edu', avatar: 'A' },
+      RECEPTIONIST: { name: 'Clara Oswald', email: 'receptionist@sms.edu', avatar: 'C' },
+      STUDENT: { name: 'Ethan Hunt', email: 'student@sms.edu', avatar: 'E' },
+      PARENT: { name: 'Jonathan Hunt', email: 'parent@sms.edu', avatar: 'J' },
+    };
+
     const ROLES = [
       { code: 'SUPER_ADMIN', name: 'Super Admin', color: 'indigo' },
       { code: 'SCHOOL_ADMIN', name: 'School Admin', color: 'blue' },
@@ -81,6 +94,8 @@
 
       const chartRef1 = useRef(null);
       const chartRef2 = useRef(null);
+
+      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.SUPER_ADMIN;
 
       useEffect(() => {
         if (currentTab === 'dashboard' && window.Chart) {
@@ -238,11 +253,14 @@
                   {isDark ? '☀️' : '🌙'}
                 </button>
 
+                {/* Dynamic User Profile Badge */}
                 <div className="flex items-center gap-3.5 pl-3 border-l border-gray-800">
-                  <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs">A</div>
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-md">
+                    {currentUser.avatar}
+                  </div>
                   <div className="hidden md:block">
-                    <p className="text-xs font-bold text-gray-200">Alexander Vance</p>
-                    <p className="text-[10px] text-gray-400">superadmin@sms.edu</p>
+                    <p className="text-xs font-bold text-gray-200">{currentUser.name}</p>
+                    <p className="text-[10px] text-gray-400">{currentUser.email}</p>
                   </div>
                 </div>
               </div>
@@ -264,7 +282,7 @@
                       <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-bold">
                         {currentRole.replace('_', ' ')} PORTAL
                       </span>
-                      <h1 className="text-2xl font-extrabold mt-1">Welcome back, Alexander!</h1>
+                      <h1 className="text-2xl font-extrabold mt-1">Welcome back, {currentUser.name.split(' ')[0]}!</h1>
                     </div>
                     <button onClick={() => setCurrentTab('students')} className="px-4 py-2 bg-white text-indigo-700 font-bold text-xs rounded-xl shadow-md">
                       + New Admission
