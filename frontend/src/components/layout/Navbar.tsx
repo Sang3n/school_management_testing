@@ -10,7 +10,6 @@ import {
   Bell,
   UserCheck,
   ChevronDown,
-  LogOut,
   Sparkles,
 } from 'lucide-react';
 
@@ -33,6 +32,8 @@ export function Navbar() {
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const IS_ADMIN = currentRole === 'SUPER_ADMIN' || currentRole === 'SCHOOL_ADMIN';
+
   return (
     <header className="h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20 px-6 flex items-center justify-between">
       {/* Global Search Bar */}
@@ -49,45 +50,51 @@ export function Navbar() {
 
       {/* Action Controls */}
       <div className="flex items-center gap-3">
-        {/* Role Switcher Button */}
-        <div className="relative">
-          <button
-            onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
-            <span>Switch Role: {currentRole}</span>
-            <ChevronDown className="w-3.5 h-3.5" />
-          </button>
+        {/* Role Switcher Button - Restricted to Super Admin & School Admin only */}
+        {IS_ADMIN ? (
+          <div className="relative">
+            <button
+              onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
+              <span>Switch Role: {currentRole}</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
 
-          {/* Role Dropdown */}
-          {showRoleDropdown && (
-            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 py-2 z-50 animate-in fade-in slide-in-from-top-2">
-              <div className="px-3 py-1.5 border-b border-gray-100 dark:border-gray-700">
-                <p className="text-[10px] uppercase font-bold text-gray-400">Select Portal Context</p>
+            {/* Role Dropdown */}
+            {showRoleDropdown && (
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="px-3 py-1.5 border-b border-gray-100 dark:border-gray-700">
+                  <p className="text-[10px] uppercase font-bold text-gray-400">Select Portal Context</p>
+                </div>
+                <div className="max-h-64 overflow-y-auto py-1">
+                  {ALL_ROLES.map((role) => (
+                    <button
+                      key={role}
+                      onClick={() => {
+                        switchRole(role);
+                        setShowRoleDropdown(false);
+                      }}
+                      className={`w-full text-left px-3.5 py-2 text-xs font-medium flex items-center justify-between transition-colors ${
+                        currentRole === role
+                          ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <span>{role.replace('_', ' ')}</span>
+                      {currentRole === role && <UserCheck className="w-3.5 h-3.5 text-indigo-600" />}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="max-h-64 overflow-y-auto py-1">
-                {ALL_ROLES.map((role) => (
-                  <button
-                    key={role}
-                    onClick={() => {
-                      switchRole(role);
-                      setShowRoleDropdown(false);
-                    }}
-                    className={`w-full text-left px-3.5 py-2 text-xs font-medium flex items-center justify-between transition-colors ${
-                      currentRole === role
-                        ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 font-semibold'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                    }`}
-                  >
-                    <span>{role.replace('_', ' ')}</span>
-                    {currentRole === role && <UserCheck className="w-3.5 h-3.5 text-indigo-600" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold">
+            <span>🛡️ Role: {currentRole.replace('_', ' ')}</span>
+          </div>
+        )}
 
         {/* Theme Toggle */}
         <button
