@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pathaibhara</title>
+  <title>Pathaibhara - Vice Principal & Executive Portal</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -90,7 +90,7 @@
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('PRINCIPAL'); // Default to Principal Dashboard
+      const [currentRole, setCurrentRole] = useState('VICE_PRINCIPAL'); // Default to Vice Principal Context
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
@@ -101,7 +101,7 @@
       const [viewStudent, setViewStudent] = useState(null);
       const [notification, setNotification] = useState(null);
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-      const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: true, Academics: true, Examinations: true, Finance: true, Communication: true });
+      const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: true, Teachers: true, Academics: true, Examinations: true });
 
       // Admission Form Multi-Step State (11 Sections)
       const [admissionStep, setAdmissionStep] = useState(1);
@@ -122,59 +122,57 @@
         username: '', tempPassword: 'SMS-' + Math.random().toString(36).slice(-8).toUpperCase(), sendCredentialsSMS: true,
       });
 
-      const chartRefAttendance = useRef(null);
-      const chartRefFees = useRef(null);
-      const chartRefPerformance = useRef(null);
-
       const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.SUPER_ADMIN;
 
-      // Executive privilege rule: ONLY Super Admin, School Admin, and Principal can view the 15-Row Executive Dashboard Layout!
+      // ROLE VISIBILITY RULE: Vice Principal Dashboard and Role context can be viewed by Super Admin, School Admin, Principal, and Vice Principal!
+      const IS_VICE_PRINCIPAL_ALLOWED = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
+
+      // Super Executive (Super Admin, School Admin, Principal)
       const IS_EXECUTIVE_ADMIN = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'].includes(currentRole);
 
-      // Student Admission privilege rule: Super Admin, School Admin, Principal, Vice Principal, Accountant
+      // Student Admission permission rule (Vice Principal has full admission rights!)
       const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
 
-      const ENHANCED_SIDEBAR = [
+      // RECOMMENDED VICE PRINCIPAL SIDEBAR STRUCTURE
+      const VICE_PRINCIPAL_SIDEBAR = [
         { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
         {
           group: 'Students', icon: '🎓', subItems: [
             { id: 'students', label: 'All Students' },
             { id: 'admissions', label: 'Admissions' },
-            { id: 'promotions', label: 'Student Promotion' },
-            { id: 'alumni', label: 'Alumni' },
+            { id: 'promotions', label: 'Promotions' },
+            { id: 'discipline', label: 'Discipline' },
+          ]
+        },
+        {
+          group: 'Teachers', icon: '👨‍🏫', subItems: [
+            { id: 'teachers', label: 'Teacher Directory' },
+            { id: 'teacher_attendance', label: 'Teacher Attendance' },
+            { id: 'teacher_timetable', label: 'Teacher Timetable' },
+            { id: 'teacher_performance', label: 'Performance Evaluation' },
           ]
         },
         {
           group: 'Academics', icon: '📚', subItems: [
             { id: 'classes', label: 'Classes & Sections' },
+            { id: 'subjects', label: 'Subjects' },
             { id: 'timetable', label: 'Timetable' },
-            { id: 'attendance', label: 'Attendance' },
-            { id: 'assignments', label: 'Assignments' },
           ]
         },
+        { id: 'attendance', label: 'Student Attendance', icon: '✅' },
         {
           group: 'Examinations', icon: '📝', subItems: [
-            { id: 'exams', label: 'Upcoming Exams' },
-            { id: 'marks', label: 'Marks Entry' },
-            { id: 'results', label: 'Results & Grade Cards' },
+            { id: 'exams', label: 'Exam Schedule' },
+            { id: 'marks_review', label: 'Marks Review' },
+            { id: 'results', label: 'Results & Marksheets' },
           ]
         },
-        {
-          group: 'Communication', icon: '💬', subItems: [
-            { id: 'notices', label: 'Notice Board' },
-            { id: 'messages', label: 'Messages & Mail' },
-            { id: 'announcements', label: 'Announcements' },
-          ]
-        },
-        {
-          group: 'Finance', icon: '💵', subItems: [
-            { id: 'fees', label: 'Fees & Invoicing' },
-            { id: 'scholarships', label: 'Scholarships' },
-          ]
-        },
-        { id: 'users', label: 'User Directory (All Roles)', icon: '🔑' },
-        { id: 'reports', label: 'Reports Exporter', icon: '📈' },
-        { id: 'settings', label: 'School Settings', icon: '⚙️' },
+        { id: 'assignments', label: 'Assignments Tracker', icon: '📚' },
+        { id: 'notices', label: 'Notice Board', icon: '📢' },
+        { id: 'reports', label: 'Academic Reports', icon: '📈' },
+        { id: 'calendar', label: 'School Calendar', icon: '📆' },
+        { id: 'messages', label: 'Parent Messages', icon: '💬' },
+        { id: 'profile', label: 'My Profile & 2FA', icon: '👤' },
       ];
 
       const ADMISSION_WIZARD_STEPS = [
@@ -195,56 +193,6 @@
         if (isDark) document.documentElement.classList.add('dark');
         else document.documentElement.classList.remove('dark');
       }, [isDark]);
-
-      // Initialize Charts for Dashboard
-      useEffect(() => {
-        if (currentTab === 'dashboard' && IS_EXECUTIVE_ADMIN && window.Chart) {
-          const ctxA = document.getElementById('attendanceDonutChart');
-          if (ctxA) {
-            if (chartRefAttendance.current) chartRefAttendance.current.destroy();
-            chartRefAttendance.current = new Chart(ctxA, {
-              type: 'doughnut',
-              data: {
-                labels: ['Present (94%)', 'Absent (3%)', 'On Leave (2%)', 'Late (1%)'],
-                datasets: [{ data: [94, 3, 2, 1], backgroundColor: ['#10b981', '#f43f5e', '#3b82f6', '#f59e0b'], borderWidth: 0 }]
-              },
-              options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-          }
-
-          const ctxF = document.getElementById('feeBarChart');
-          if (ctxF) {
-            if (chartRefFees.current) chartRefFees.current.destroy();
-            chartRefFees.current = new Chart(ctxF, {
-              type: 'bar',
-              data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [
-                  { label: 'Collected Fees ($)', data: [45000, 52000, 48000, 61000, 68000, 64000], backgroundColor: '#4f46e5', borderRadius: 8 },
-                  { label: 'Pending Dues ($)', data: [8000, 6000, 9500, 4000, 3000, 5200], backgroundColor: '#f43f5e', borderRadius: 8 }
-                ]
-              },
-              options: { responsive: true, maintainAspectRatio: false }
-            });
-          }
-
-          const ctxP = document.getElementById('performanceChart');
-          if (ctxP) {
-            if (chartRefPerformance.current) chartRefPerformance.current.destroy();
-            chartRefPerformance.current = new Chart(ctxP, {
-              type: 'line',
-              data: {
-                labels: ['Term 1', 'Mid-Term', 'Term 2', 'Pre-Board', 'Final Exam'],
-                datasets: [
-                  { label: 'Mathematics Avg (%)', data: [82, 85, 88, 91, 94], borderColor: '#6366f1', fill: false, tension: 0.3 },
-                  { label: 'Science Avg (%)', data: [78, 81, 84, 87, 90], borderColor: '#10b981', fill: false, tension: 0.3 }
-                ]
-              },
-              options: { responsive: true, maintainAspectRatio: false }
-            });
-          }
-        }
-      }, [currentTab, currentRole, isDark]);
 
       const notify = (msg) => {
         setNotification(msg);
@@ -269,49 +217,49 @@
         setStudents([newEntry, ...students]);
         setShowAdmissionModal(false);
         setAdmissionStep(1);
-        notify(`🎉 Student "${fullName}" Successfully Enrolled!`);
+        notify(`🎉 Student "${fullName}" Successfully Enrolled by Vice Principal!`);
       };
 
       return (
         <div className="flex flex-col min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
           
-          {/* ROW 15 PREVIEW: TOP WEATHER & SCROLLING ANNOUNCEMENT TICKER */}
+          {/* TOP ANNOUNCEMENT & WEATHER TICKER */}
           <div className="bg-indigo-900 text-white text-xs px-6 py-1.5 flex items-center justify-between overflow-hidden shadow-inner">
             <div className="flex items-center gap-3 shrink-0">
-              <span className="font-extrabold bg-rose-600 px-2 py-0.5 rounded uppercase tracking-wider text-[10px]">ANNOUNCEMENT</span>
-              <span className="font-medium text-indigo-200">🌡️ Kathmandu: 24°C Sunny • Humidity 58%</span>
+              <span className="font-extrabold bg-amber-500 text-slate-950 px-2 py-0.5 rounded uppercase tracking-wider text-[10px]">VICE PRINCIPAL PORTAL</span>
+              <span className="font-medium text-indigo-200">🌡️ Kathmandu: 24°C Sunny • Academic Operations & Supervision</span>
             </div>
             <div className="overflow-hidden w-1/2 relative hidden sm:block">
               <span className="animate-ticker font-semibold text-indigo-100">
-                📢 Executive Principal Dashboard Active • Restrict Analytics strictly to Super Admin, School Admin, and Principal.
+                📢 Vice Principal Dashboard Active: Managing Academics, Teacher Supervision, Attendance & Student Discipline.
               </span>
             </div>
           </div>
 
           <div className="flex flex-1 min-h-0">
-            {/* SIDEBAR NAVIGATION */}
+            {/* RECOMMENDED VICE PRINCIPAL SIDEBAR */}
             <aside className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between sticky top-0 z-30 transition-all duration-300 shadow-sm`}>
               <div>
                 <div 
                   onClick={() => setCurrentTab('dashboard')} 
                   className="h-16 flex items-center px-5 border-b border-slate-200 dark:border-slate-800 gap-3 cursor-pointer hover:opacity-85 transition-opacity"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-indigo-600 flex items-center justify-center text-white shadow-md font-extrabold text-lg shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-white shadow-md font-extrabold text-lg shrink-0">
                     🏫
                   </div>
                   {!sidebarCollapsed && (
                     <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
-                      <span className="text-rose-600 dark:text-rose-400">Pathaibhara</span>
+                      <span className="text-amber-600 dark:text-amber-400">Pathaibhara</span>
                     </span>
                   )}
                 </div>
 
                 {!sidebarCollapsed && (
-                  <div className="px-4 py-3 mx-3 my-3 bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-between">
+                  <div className="px-4 py-3 mx-3 my-3 bg-amber-50 dark:bg-amber-950/50 rounded-2xl border border-amber-200 dark:border-amber-900/60 flex items-center justify-between">
                     <div className="flex items-center gap-2.5 overflow-hidden">
-                      <span className="text-indigo-600 dark:text-indigo-400 text-sm shrink-0">🎓</span>
+                      <span className="text-amber-600 dark:text-amber-400 text-sm shrink-0">🛡️</span>
                       <div className="overflow-hidden">
-                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase font-bold tracking-wider">Active Context</p>
+                        <p className="text-[10px] text-amber-600 dark:text-amber-400 uppercase font-bold tracking-wider">Active Context</p>
                         <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate">{currentRole.replace('_', ' ')}</p>
                       </div>
                     </div>
@@ -319,7 +267,7 @@
                 )}
 
                 <nav className="px-3 py-2 space-y-1.5 max-h-[calc(100vh-190px)] overflow-y-auto">
-                  {ENHANCED_SIDEBAR.map((item, idx) => {
+                  {VICE_PRINCIPAL_SIDEBAR.map((item, idx) => {
                     if (item.subItems) {
                       const isOpen = openSidebarCategory[item.group];
                       return (
@@ -341,7 +289,7 @@
                                   key={sub.id}
                                   onClick={() => setCurrentTab(sub.id)}
                                   className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                                    currentTab === sub.id ? 'bg-indigo-600 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                    currentTab === sub.id ? 'bg-amber-500 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                                   }`}
                                 >
                                   • {sub.label}
@@ -357,7 +305,7 @@
                         key={item.id}
                         onClick={() => setCurrentTab(item.id)}
                         className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                          currentTab === item.id ? 'bg-slate-700 dark:bg-indigo-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          currentTab === item.id ? 'bg-slate-700 dark:bg-amber-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
                         <span>{item.icon}</span>
@@ -369,7 +317,7 @@
               </div>
 
               <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 Principal Edition</p>}
+                {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 VP Edition</p>}
                 <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
                   {sidebarCollapsed ? '➔' : '◀'}
                 </button>
@@ -382,55 +330,48 @@
               <header className="h-16 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-sm">📊</div>
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950 flex items-center justify-center font-bold text-amber-700 text-sm">🎓</div>
                     <h1 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight capitalize">
-                      {IS_EXECUTIVE_ADMIN ? 'Executive Dashboard (Super Admin, Admin & Principal)' : `${currentRole.replace('_', ' ')} Workspace`}
+                      Vice Principal Academic & Supervision Dashboard
                     </h1>
                   </div>
 
                   <select 
                     value={academicYear} 
                     onChange={(e) => setAcademicYear(e.target.value)}
-                    className="px-3 py-1 text-xs rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-extrabold border border-indigo-200 dark:border-indigo-800"
+                    className="px-3 py-1 text-xs rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-extrabold border border-amber-200"
                   >
                     <option value="2025-2026">Academic Year: 2025-2026</option>
                     <option value="2026-2027">Academic Year: 2026-2027</option>
                   </select>
-
-                  <div className="relative hidden md:block w-64">
-                    <input type="text" placeholder="Global Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-8 pr-4 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border-none text-slate-900 dark:text-slate-100" />
-                    <span className="absolute left-2.5 top-2 text-xs text-slate-400">🔍</span>
-                  </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* Switch Role Dropdown */}
-                  <div className="relative">
-                    <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
-                      <span>✨ Switch Portal: {currentRole}</span>
-                      <span>▼</span>
-                    </button>
-                    {showRoleDropdown && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-2 z-50">
-                        {ROLES.map((r) => (
-                          <button key={r.code} onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); }} className="w-full text-left px-3.5 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700">
-                            {r.name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  {/* Switch Role Dropdown - Accessible to Super Admin, School Admin, Principal, Vice Principal */}
+                  {IS_VICE_PRINCIPAL_ALLOWED && (
+                    <div className="relative">
+                      <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                        <span>✨ Switch Role: {currentRole}</span>
+                        <span>▼</span>
+                      </button>
+                      {showRoleDropdown && (
+                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50">
+                          {ROLES.map((r) => (
+                            <button key={r.code} onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); }} className="w-full text-left px-3.5 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700">
+                              {r.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-500">
                     {isDark ? '☀️ Light' : '🌙 Dark'}
                   </button>
 
-                  <button onClick={() => notify('🔔 5 Unread Notifications')} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 relative">
-                    🔔 <span className="w-2 h-2 rounded-full bg-rose-500 absolute top-2 right-2 ring-2 ring-white" />
-                  </button>
-
                   <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
-                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
+                    <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center font-bold text-xs text-white">
                       {currentUser.avatar}
                     </div>
                     <div className="hidden md:block">
@@ -441,10 +382,9 @@
                 </div>
               </header>
 
-              {/* DASHBOARD CONTENT BODY */}
               <main className="p-8 max-w-7xl w-full mx-auto space-y-8">
                 {notification && (
-                  <div className="p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 text-indigo-700 text-xs font-bold flex items-center gap-2">
+                  <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-2">
                     <span>ℹ️</span> {notification}
                   </div>
                 )}
@@ -452,291 +392,106 @@
                 {currentTab === 'dashboard' && (
                   <div className="space-y-8">
                     
-                    {/* RESTRICTION CONDITION: ONLY Super Admin, School Admin, and Principal see the 15-Row Executive Dashboard Layout! */}
-                    {IS_EXECUTIVE_ADMIN ? (
-                      <>
-                        {/* ROW 1: 8 SUMMARY STATISTICS CARDS */}
-                        <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Row 1 – Institutional Statistics Cards</h2>
-                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold">
-                              👑 Executive Access (Super Admin, School Admin & Principal)
-                            </span>
+                    {/* VICE PRINCIPAL 10 OVERVIEW CARDS */}
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Vice Principal Executive Overview Cards</h2>
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-extrabold">
+                          🛡️ Vice Principal Access (Academic & Supervision Management)
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+                        {[
+                          { title: 'Total Students', val: '1,284', icon: '👨‍🎓', color: 'indigo' },
+                          { title: 'Total Teachers', val: '86', icon: '👨‍🏫', color: 'blue' },
+                          { title: 'Classes Today', val: '12', icon: '🏫', color: 'purple' },
+                          { title: 'Attendance Today', val: '96.4%', icon: '✅', color: 'emerald' },
+                          { title: 'Pending Attendance', val: '3 Classes', icon: '⏳', color: 'amber' },
+                          { title: 'Upcoming Exams', val: '3', icon: '🧪', color: 'rose' },
+                          { title: 'Pending Assignments', val: '14', icon: '📝', color: 'cyan' },
+                          { title: 'Discipline Cases', val: '2 Active', icon: '⚖️', color: 'pink' },
+                          { title: 'New Admissions', val: '42', icon: '➕', color: 'teal' },
+                          { title: 'Notices', val: '5 Active', icon: '🔔', color: 'violet' },
+                        ].map((c, i) => (
+                          <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
+                            <div className="flex justify-between text-[10px] text-slate-400">
+                              <span className="truncate">{c.title}</span>
+                              <span>{c.icon}</span>
+                            </div>
+                            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{c.val}</h3>
                           </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-                            {[
-                              { title: 'Total Students', val: '1,284', desc: '+4.2%', icon: '👨‍🎓' },
-                              { title: 'Classes Assigned', val: '12', desc: 'Active Grades', icon: '🏫' },
-                              { title: 'Subjects Teaching', val: '4', desc: 'Maths & Sci', icon: '📚' },
-                              { title: 'Attendance Today', val: '96.4%', desc: '1,238 Present', icon: '✅' },
-                              { title: 'Assignments Pending', val: '14', desc: 'Needs Review', icon: '📝' },
-                              { title: 'Today\'s Classes', val: '3', desc: 'Periods Scheduled', icon: '📅' },
-                              { title: 'Upcoming Exams', val: '3', desc: 'Term 2 Board', icon: '🧪' },
-                              { title: 'Unread Notifs', val: '5', desc: 'System Mail', icon: '🔔' },
-                            ].map((card, idx) => (
-                              <div key={idx} className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
-                                <div className="flex items-center justify-between text-[11px] text-slate-400">
-                                  <span className="truncate">{card.title}</span>
-                                  <span>{card.icon}</span>
-                                </div>
-                                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">{card.val}</h3>
-                                <p className="text-[10px] font-bold text-emerald-500">{card.desc}</p>
-                              </div>
-                            ))}
-                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* SECTION 2 & 3: STUDENT & TEACHER SUPERVISION MODULES */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      
+                      {/* TEACHER SUPERVISION & LEAVE APPROVALS */}
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>👨‍🏫</span> Teacher Supervision & Leave Approvals
+                          </h3>
+                          <span className="text-xs font-bold text-amber-600">2 Pending Approvals</span>
                         </div>
-
-                        {/* ROW 2: QUICK ACTIONS SHORTCUTS */}
-                        <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
-                          <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Row 2 – Executive Quick Actions & Shortcuts</h3>
-                          <div className="flex flex-wrap items-center gap-2.5">
-                            {CAN_ADMIT_STUDENTS && (
-                              <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200">➕ Add Student</button>
-                            )}
-                            <button onClick={() => notify('Attendance Taken')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">✅ Take Attendance</button>
-                            <button onClick={() => notify('Opening Marks Entry')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">📝 Enter Marks</button>
-                            <button onClick={() => notify('Creating New Assignment')} className="px-3.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-200">📚 Create Assignment</button>
-                            <button onClick={() => notify('Publishing Notice')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200">📢 Publish Notice</button>
-                            <button onClick={() => notify('Generating Report Cards')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">📄 Generate Report Card</button>
-                            <button onClick={() => notify('Opening Fee Register')} className="px-3.5 py-1.5 rounded-xl bg-cyan-50 text-cyan-700 text-xs font-bold border border-cyan-200">💰 Collect Fees</button>
-                            <button onClick={() => notify('Parent Messaging Opened')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300">📧 Send Message to Parents</button>
+                        <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                          <div className="py-2.5 flex items-center justify-between">
+                            <div><p className="font-bold text-slate-900 dark:text-white">Emily Watson (Mathematics)</p><p className="text-slate-400">Medical Leave Request (Aug 5 - Aug 7)</p></div>
+                            <button onClick={() => notify('Approved Teacher Leave!')} className="px-3 py-1 bg-emerald-600 text-white rounded-lg font-bold">Approve Leave</button>
                           </div>
-                        </div>
-
-                        {/* ROW 3 & ROW 4: TODAY'S SCHEDULE + ATTENDANCE OVERVIEW */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>📅</span> Row 3 – Today's Class Timetable
-                              </h3>
-                              <span className="text-xs text-indigo-600 font-bold">3 Periods Scheduled</span>
-                            </div>
-                            <table className="w-full text-left text-xs">
-                              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
-                                <tr><th className="p-2.5">Time</th><th className="p-2.5">Class</th><th className="p-2.5">Subject</th><th className="p-2.5">Room</th></tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                                <tr><td className="p-2.5 font-bold text-indigo-600">9:00 AM - 9:45 AM</td><td className="p-2.5 font-bold">Grade 10 A</td><td className="p-2.5">Mathematics</td><td className="p-2.5 font-semibold text-emerald-600">Room 201</td></tr>
-                                <tr><td className="p-2.5 font-bold text-indigo-600">10:00 AM - 10:45 AM</td><td className="p-2.5 font-bold">Grade 9 B</td><td className="p-2.5">Science</td><td className="p-2.5 font-semibold text-emerald-600">Room 305</td></tr>
-                                <tr><td className="p-2.5 font-bold text-indigo-600">11:30 AM - 12:15 PM</td><td className="p-2.5 font-bold">Grade 8 C</td><td className="p-2.5">Mathematics</td><td className="p-2.5 font-semibold text-emerald-600">Room 104</td></tr>
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>✅</span> Row 4 – Institutional Attendance Overview
-                              </h3>
-                            </div>
-                            <div className="grid grid-cols-4 gap-2 text-center text-xs font-bold">
-                              <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">Present<br/><span className="text-lg">1,238</span></div>
-                              <div className="p-2 bg-rose-50 text-rose-700 rounded-xl">Absent<br/><span className="text-lg">32</span></div>
-                              <div className="p-2 bg-blue-50 text-blue-700 rounded-xl">On Leave<br/><span className="text-lg">12</span></div>
-                              <div className="p-2 bg-amber-50 text-amber-700 rounded-xl">Late<br/><span className="text-lg">8</span></div>
-                            </div>
-                            <div className="h-44 relative"><canvas id="attendanceDonutChart"></canvas></div>
-                          </div>
-                        </div>
-
-                        {/* ROW 5: RECENT STUDENTS TABLE */}
-                        <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                          <div className="flex justify-between items-center">
-                            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                              <span>👨‍🎓</span> Row 5 – Recent Enrolled Students
-                            </h3>
-                            <button onClick={() => setCurrentTab('students')} className="text-xs font-bold text-indigo-600 hover:underline">View All Directory →</button>
-                          </div>
-                          <table className="w-full text-left text-xs">
-                            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
-                              <tr><th className="p-3">Photo</th><th className="p-3">Name</th><th className="p-3">Class</th><th className="p-3">Roll</th><th className="p-3">Status</th><th className="p-3 text-right">Quick Actions</th></tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                              {students.slice(0, 3).map((s) => (
-                                <tr key={s.id}>
-                                  <td className="p-3"><div className="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center">{s.name[0]}</div></td>
-                                  <td className="p-3 font-bold text-slate-900 dark:text-white">{s.name}</td>
-                                  <td className="p-3 font-semibold text-indigo-600">{s.class}</td>
-                                  <td className="p-3">{s.roll}</td>
-                                  <td className="p-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">ACTIVE</span></td>
-                                  <td className="p-3 text-right space-x-1.5">
-                                    <button onClick={() => setViewStudent(s)} className="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-bold">View</button>
-                                    <button onClick={() => notify('Editing Student Details')} className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-[11px] font-bold">Edit</button>
-                                    <button onClick={() => notify('Attendance Recorded')} className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[11px] font-bold">Attendance</button>
-                                    <button onClick={() => notify('Mark Card Printed')} className="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg text-[11px] font-bold">Result</button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* ROW 6 & ROW 7: ASSIGNMENTS + EXAMINATION PANEL */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>📚</span> Row 6 – Assignments & Submission Tracker
-                              </h3>
-                              <button onClick={() => notify('New Assignment Modal')} className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-xs font-bold">+ Create Assignment</button>
-                            </div>
-                            <div className="grid grid-cols-4 gap-2 text-center text-xs font-bold">
-                              <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl">New<br/><span className="text-base text-indigo-600">8</span></div>
-                              <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl">Submitted<br/><span className="text-base text-emerald-600">142</span></div>
-                              <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl">Pending Review<br/><span className="text-base text-amber-600">14</span></div>
-                              <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl">Late<br/><span className="text-base text-rose-600">3</span></div>
-                            </div>
-                          </div>
-
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>🧪</span> Row 7 – Examination & Invigilation Panel
-                              </h3>
-                            </div>
-                            <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                              <div className="py-2 flex justify-between"><span>Upcoming Exams:</span><span className="font-bold text-indigo-600">Term 2 Mathematics (Aug 10)</span></div>
-                              <div className="py-2 flex justify-between"><span>Marks Pending Entry:</span><span className="font-bold text-amber-600">Class 9 Science Practical</span></div>
-                              <div className="py-2 flex justify-between"><span>Results Pending Publication:</span><span className="font-bold text-rose-600">Pre-Board Grade 10 Marksheets</span></div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* ROW 8 & ROW 9: FEE OVERVIEW BAR CHART + STUDENT PERFORMANCE ANALYTICS */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>💰</span> Row 8 – Institutional Fee Overview Bar Chart
-                              </h3>
-                            </div>
-                            <div className="grid grid-cols-4 gap-2 text-center text-xs font-bold">
-                              <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">Today<br/>$4,500</div>
-                              <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl">Monthly<br/>$64,000</div>
-                              <div className="p-2 bg-rose-50 text-rose-700 rounded-xl">Pending<br/>$5,200</div>
-                              <div className="p-2 bg-purple-50 text-purple-700 rounded-xl">Scholarships<br/>$12,000</div>
-                            </div>
-                            <div className="h-52 relative"><canvas id="feeBarChart"></canvas></div>
-                          </div>
-
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>📈</span> Row 9 – Student Performance Analytics & Risk Alerts
-                              </h3>
-                            </div>
-                            <div className="h-44 relative"><canvas id="performanceChart"></canvas></div>
-                          </div>
-                        </div>
-
-                        {/* ROW 10 & ROW 11: NOTICES & EVENTS + MONTHLY CALENDAR */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 pb-3">
-                              <span>📢</span> Row 10 – Latest Notices & Upcoming Events
-                            </h3>
-                            <div className="grid grid-cols-2 gap-4 text-xs">
-                              <div className="space-y-2">
-                                <p className="font-bold text-indigo-600">📌 School Notices</p>
-                                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 font-semibold">• Staff Meeting tomorrow at 3:00 PM</div>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="font-bold text-rose-600">🎉 Upcoming Events</p>
-                                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 font-semibold">• Annual Sports Day (Aug 15)</div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 pb-3">
-                              <span>📆</span> Row 11 – Monthly Academic Calendar
-                            </h3>
-                            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold">
-                              {['Su','Mo','Tu','We','Th','Fr','Sa'].map((d, i) => <div key={i} className="text-slate-400 py-1">{d}</div>)}
-                              {[...Array(31)].map((_, i) => (
-                                <div key={i} className={`py-1.5 rounded-lg border border-transparent ${i+1 === 15 ? 'bg-rose-600 text-white font-extrabold' : 'hover:bg-slate-100'}`}>
-                                  {i + 1}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* ROW 12 & ROW 13: MESSAGES & SYSTEM RECENT ACTIVITY LOG */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-3 shadow-xs">
-                            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 pb-3">
-                              <span>💬</span> Row 12 – Messages & Parent Mailbox
-                            </h3>
-                            <div className="space-y-2 text-xs">
-                              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl flex justify-between">
-                                <div><p className="font-bold">Jonathan Hunt (Parent)</p><p className="text-slate-400">Regarding Science Project submission...</p></div>
-                                <span className="text-[10px] text-slate-400">10m ago</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-3 shadow-xs">
-                            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 pb-3">
-                              <span>⚡</span> Row 13 – Recent System Activity Audit Trail
-                            </h3>
-                            <div className="space-y-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                              <p>• ✅ Daily Attendance submitted for Grade 10 A</p>
-                              <p>• 📝 Mathematics Mid-Term Marks published</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* ROW 14: BIRTHDAYS CARD */}
-                        <div className="p-5 bg-gradient-to-r from-amber-50 to-rose-50 dark:from-slate-900 dark:to-slate-800 border border-amber-200 dark:border-slate-800 rounded-2xl flex items-center justify-between shadow-xs">
-                          <div className="flex items-center gap-3">
-                            <span className="text-3xl">🎂</span>
-                            <div>
-                              <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-700">Row 14 – Today's Birthdays Celebration</h4>
-                              <p className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">🎉 Ethan Hunt (Student - Class 10) & 👨‍🏫 Mr. Arthur Pendelton (Librarian)</p>
-                            </div>
-                          </div>
-                          <button onClick={() => notify('Sent Birthday Wishes!')} className="px-4 py-2 bg-amber-500 text-white font-bold text-xs rounded-xl shadow-md">Send Wishes 🎈</button>
-                        </div>
-                      </>
-                    ) : (
-                      /* NON-EXECUTIVE WORKSPACE VIEW FOR TEACHERS, LIBRARIANS, STUDENTS, PARENTS */
-                      <div className="space-y-6">
-                        <div className="p-6 rounded-3xl bg-slate-900 text-white shadow-xl flex items-center justify-between">
-                          <div>
-                            <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-xs font-bold">
-                              🛡️ ROLE CONTEXT: {currentRole.replace('_', ' ')}
-                            </span>
-                            <h1 className="text-2xl font-extrabold mt-2">Welcome to your Portal Workspace!</h1>
-                            <p className="text-xs text-slate-400 mt-1">
-                              🔒 Note: Executive 15-Row Analytics is strictly reserved for Super Admin, School Admin, and Principal.
-                            </p>
-                          </div>
-                          <button 
-                            onClick={() => { setCurrentRole('PRINCIPAL'); notify('👑 Switched to Principal Mode'); }}
-                            className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md hover:bg-indigo-700"
-                          >
-                            Switch to Principal / Admin
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-2">
-                            <h3 className="font-bold text-sm">📅 Daily Task Roster</h3>
-                            <p className="text-xs text-slate-500">Access daily attendance, timetable schedules, and class logs.</p>
-                          </div>
-                          <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-2">
-                            <h3 className="font-bold text-sm">📚 Academic Submissions</h3>
-                            <p className="text-xs text-slate-500">View current subject assignments, grade books, and marks entry.</p>
-                          </div>
-                          <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-2">
-                            <h3 className="font-bold text-sm">💬 School Bulletins</h3>
-                            <p className="text-xs text-slate-500">Read institutional announcements, staff notes, and notices.</p>
+                          <div className="py-2.5 flex items-center justify-between">
+                            <div><p className="font-bold text-slate-900 dark:text-white">Arthur Pendelton (Librarian)</p><p className="text-slate-400">Timetable Swap Request (Grade 10 A)</p></div>
+                            <button onClick={() => notify('Approved Timetable Swap!')} className="px-3 py-1 bg-indigo-600 text-white rounded-lg font-bold">Approve Swap</button>
                           </div>
                         </div>
                       </div>
-                    )}
+
+                      {/* STUDENT DISCIPLINE & BEHAVIORAL LOGS */}
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>⚖️</span> Student Discipline & Counseling Cases
+                          </h3>
+                          <button onClick={() => notify('Opening Discipline Portal')} className="text-xs font-bold text-rose-600 hover:underline">+ File Incident</button>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 flex justify-between items-center">
+                            <div><p className="font-bold text-rose-900 dark:text-rose-200">Lucas Davis (Grade 11-B)</p><p className="text-rose-700 dark:text-rose-300">Unexcused Absence & Classroom Disturbance</p></div>
+                            <button onClick={() => notify('Counseling Session Scheduled')} className="px-3 py-1 bg-rose-600 text-white rounded-lg font-bold">Counseling</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* PERMISSIONS MATRIX & DENIED MODULES BANNER */}
+                    <div className="p-6 bg-slate-900 text-white rounded-3xl space-y-4 shadow-xl border border-slate-800">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-extrabold flex items-center gap-2 text-amber-400">
+                          <span>🛡️</span> Vice Principal Security & Administrative Separation Policy
+                        </h3>
+                        <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold border border-amber-500/30">
+                          Role Security Active
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
+                          <p className="font-extrabold text-emerald-400">✅ Vice Principal Authorized Operational Scope:</p>
+                          <p className="text-slate-300">• Full Student Enrollment & Academic Profile Edits</p>
+                          <p className="text-slate-300">• Teacher Timetable, Supervision & Performance Evaluations</p>
+                          <p className="text-slate-300">• Academic Year, Section, Class & Exam Schedules</p>
+                          <p className="text-slate-300">• Discipline Incident Approvals & Parent Communication</p>
+                        </div>
+                        <div className="p-4 bg-slate-800/60 rounded-2xl space-y-1.5 border border-slate-700">
+                          <p className="font-extrabold text-rose-400">🔒 Restricted Administrative & Financial Controls:</p>
+                          <p className="text-slate-400">• Cannot create/delete User Accounts or assign System Roles</p>
+                          <p className="text-slate-400">• Cannot modify Financial Payroll or System Database Backups</p>
+                          <p className="text-slate-400">• Cannot alter School-wide System Security Configurations</p>
+                        </div>
+                      </div>
+                    </div>
 
                   </div>
                 )}
@@ -747,15 +502,13 @@
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div>
                         <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Students & Admissions Directory</h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Complete institutional enrollment & student records</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Vice Principal Student Management & Transfers</p>
                       </div>
 
-                      {CAN_ADMIT_STUDENTS ? (
-                        <button onClick={() => setShowAdmissionModal(true)} className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2">
-                          <span>➕</span> + Add Student Details
+                      {CAN_ADMIT_STUDENTS && (
+                        <button onClick={() => setShowAdmissionModal(true)} className="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-indigo-600 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2">
+                          <span>➕</span> + Add Student Details (Vice Principal)
                         </button>
-                      ) : (
-                        <span className="px-4 py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-600 text-xs font-bold border">🔒 Admission Restricted</span>
                       )}
                     </div>
 
@@ -784,7 +537,7 @@
                 )}
               </main>
 
-              {/* FOOTER STATISTICS BAR */}
+              {/* FOOTER STATISTICS */}
               <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-8 py-3.5 flex flex-wrap items-center justify-between text-xs text-slate-500 font-semibold">
                 <div className="flex flex-wrap items-center gap-6">
                   <span>👨‍🎓 Students: <strong className="text-slate-900 dark:text-white">1,248</strong></span>
@@ -792,7 +545,6 @@
                   <span>✅ Attendance: <strong className="text-emerald-600">96.4%</strong></span>
                   <span>📝 Assignments Pending: <strong className="text-amber-600">14</strong></span>
                   <span>🧪 Upcoming Exams: <strong className="text-indigo-600">3</strong></span>
-                  <span>🔔 Unread Notifications: <strong className="text-rose-600">5</strong></span>
                 </div>
                 <p className="text-[11px] text-slate-400">Pathaibhara SMS © 2026</p>
               </footer>
@@ -805,14 +557,14 @@
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
                 <div className="p-5 border-b flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg">➕</div>
-                    <div><h3 className="text-base font-extrabold text-slate-900 dark:text-white">Student Enrollment Wizard</h3><p className="text-xs text-slate-400">11-Category Registration Form</p></div>
+                    <div className="w-10 h-10 rounded-2xl bg-amber-600 text-white flex items-center justify-center font-extrabold text-lg">➕</div>
+                    <div><h3 className="text-base font-extrabold text-slate-900 dark:text-white">Vice Principal Student Admission</h3><p className="text-xs text-slate-400">11-Category Registration Form</p></div>
                   </div>
                   <button onClick={() => setShowAdmissionModal(false)} className="p-2 rounded-xl text-slate-400">✕</button>
                 </div>
                 <form onSubmit={handleAddStudentSubmit} className="p-6 flex-1 overflow-y-auto space-y-4 text-xs">
-                  <p className="font-bold text-indigo-600">Comprehensive Student Admission Wizard Active</p>
-                  <button type="submit" className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold">✓ Complete Enrollment</button>
+                  <p className="font-bold text-amber-600">Vice Principal Authorized Student Admission Active</p>
+                  <button type="submit" className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold">✓ Submit Enrollment</button>
                 </form>
               </div>
             </div>
