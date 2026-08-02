@@ -19,8 +19,7 @@ import {
 import { AdmissionFormModal } from './AdmissionFormModal';
 import { StudentProfileView } from './StudentProfileView';
 
-export function StudentList() {
-  const { currentRole } = useAuth();
+
 
 
   const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS as any);
