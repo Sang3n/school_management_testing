@@ -51,11 +51,15 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col justify-between h-screen sticky top-0 transition-colors duration-200 z-30">
       <div>
-        {/* Brand Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 gap-3">
+        {/* Brand Logo - Click to return to Dashboard */}
+        <Link
+          href="/dashboard"
+          className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 gap-3 hover:opacity-80 transition-opacity"
+          title="Return to Dashboard Overview"
+        >
           <School className="w-7 h-7 text-indigo-600" />
           <span className="text-lg font-bold text-gray-900 dark:text-white">Pathaibhara</span>
-        </div>
+        </Link>
 
         {/* Current Role Tag */}
         <div className="px-4 py-3 mx-3 my-3 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl border border-indigo-100 dark:border-indigo-900/50 flex items-center gap-2">
