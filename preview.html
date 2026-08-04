@@ -463,15 +463,39 @@
                   </h3>
 
                   {/* FORM FIELDS */}
-                  <form onSubmit={handleLoginSubmit} className="space-y-5">
+                  <form onSubmit={handleLoginSubmit} className="space-y-4">
                     
+                    {/* Select Role / Portal Dropdown */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Select Role / Portal</label>
+                      <select
+                        value={currentRole}
+                        onChange={(e) => {
+                          const selectedRole = e.target.value;
+                          setCurrentRole(selectedRole);
+                          const matchedProfile = ROLE_USER_PROFILES[selectedRole];
+                          if (matchedProfile) setLoginUsername(matchedProfile.email);
+                        }}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:outline-none text-xs font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs"
+                      >
+                        {ROLES.map(r => (
+                          <option key={r.code} value={r.code}>{r.name} Portal</option>
+                        ))}
+                      </select>
+                    </div>
+
                     {/* Login Username */}
                     <div>
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Login</label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Login Email</label>
                       <input
                         type="text"
                         value={loginUsername}
-                        onChange={(e) => setLoginUsername(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setLoginUsername(val);
+                          const foundRoleKey = Object.keys(ROLE_USER_PROFILES).find(k => ROLE_USER_PROFILES[k].email.toLowerCase() === val.toLowerCase());
+                          if (foundRoleKey) setCurrentRole(foundRoleKey);
+                        }}
                         className="w-full px-4 py-2.5 rounded-xl border border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs"
                         placeholder="Enter login"
                         required
@@ -683,21 +707,10 @@
               </div>
 
               <div className="flex items-center gap-3">
-                {/* Switch Role Dropdown */}
-                <div className="relative">
-                  <button onClick={() => setShowRoleDropdown(!showRoleDropdown)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-xs font-bold">
-                    <span>✨ Switch Role: {currentRole}</span>
-                    <span>▼</span>
-                  </button>
-                  {showRoleDropdown && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50">
-                      {ROLES.map((r) => (
-                        <button key={r.code} onClick={() => { setCurrentRole(r.code); setShowRoleDropdown(false); }} className="w-full text-left px-3.5 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700">
-                          {r.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                {/* Locked Active Role Badge (Enforces Role Isolation) */}
+                <div className="px-3.5 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-extrabold flex items-center gap-2">
+                  <span className="text-slate-400 font-bold">Active Role:</span>
+                  <span className="bg-purple-600 text-white px-2 py-0.5 rounded text-[11px] font-black tracking-wide">{currentRole.replace('_', ' ')}</span>
                 </div>
 
                 <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-500">
