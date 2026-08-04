@@ -88,7 +88,7 @@
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('VICE_PRINCIPAL');
+      const [currentRole, setCurrentRole] = useState('STUDENT');
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
@@ -144,7 +144,7 @@
 
       const chartRefPerformance = useRef(null);
 
-      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.VICE_PRINCIPAL;
+      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.STUDENT;
 
       const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
       
@@ -499,6 +499,164 @@
                 </div>
               )}
 
+              {/* DEDICATED STUDENT DASHBOARD (LOGGED IN AS STUDENT) */}
+              {currentTab === 'dashboard' && currentRole === 'STUDENT' && (
+                <div className="space-y-8 animate-in fade-in duration-300">
+                  
+                  {/* STUDENT HERO BANNER */}
+                  <div className="p-6 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">
+                        <span>🎒 Student Portal</span>
+                        <span>•</span>
+                        <span>Grade 10-A (Red House)</span>
+                      </div>
+                      <h2 className="text-2xl font-black tracking-tight">Welcome Back, {currentUser.name}! 🎒</h2>
+                      <p className="text-xs text-blue-100 max-w-xl font-medium">
+                        Track your classes, homework assignments, exam schedules, attendance rate, report card grades, and library books.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button onClick={() => notify('📚 Viewing Pending Homework (2 Tasks)')} className="px-4 py-2.5 bg-white text-blue-900 font-extrabold text-xs rounded-2xl shadow-md hover:bg-slate-50 transition-colors">
+                        📚 View Homework (2)
+                      </button>
+                      <button onClick={() => notify('📝 Opened Q3 Mid-Term Exam Routine')} className="px-4 py-2.5 bg-cyan-950/60 hover:bg-cyan-950 text-white font-extrabold text-xs rounded-2xl border border-white/20 transition-colors">
+                        📝 Exam Timetable
+                      </button>
+                      <button onClick={() => notify('📊 Report Card Downloaded (GPA 3.85 / 4.0)')} className="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs rounded-2xl shadow-md transition-colors">
+                        📊 Download Report Card
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 10 STUDENT ACADEMIC OVERVIEW METRICS (CARDS) */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">My Academic Status</h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 text-[10px] font-extrabold">
+                        🎒 Student View Access
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+                      {[
+                        { title: 'My GPA', val: '3.85 / 4.0', icon: '📊', color: 'text-cyan-600 dark:text-cyan-400' },
+                        { title: 'Attendance Rate', val: '98.2%', icon: '📅', color: 'text-emerald-600 dark:text-emerald-400' },
+                        { title: 'Pending Homework', val: '2 Tasks', icon: '📚', color: 'text-amber-600 dark:text-amber-400' },
+                        { title: 'Periods Today', val: '4 Classes', icon: '⏰', color: 'text-purple-600 dark:text-purple-400' },
+                        { title: 'Upcoming Exam', val: 'Q3 Mid-Term', icon: '📝', color: 'text-rose-600 dark:text-rose-400' },
+                        { title: 'Library Books', val: '2 Issued', icon: '📖', color: 'text-indigo-600 dark:text-indigo-400' },
+                        { title: 'Fee Status', val: '✅ Clear', icon: '💰', color: 'text-emerald-600 dark:text-emerald-400' },
+                        { title: 'Bus Route', val: 'Route #4', icon: '🚌', color: 'text-blue-600 dark:text-blue-400' },
+                        { title: 'House Points', val: '145 Pts', icon: '🏠', color: 'text-pink-600 dark:text-pink-400' },
+                        { title: 'School Notices', val: '3 Bulletins', icon: '📢', color: 'text-violet-600 dark:text-violet-400' },
+                      ].map((c, i) => (
+                        <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
+                          <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                            <span className="truncate">{c.title}</span>
+                            <span>{c.icon}</span>
+                          </div>
+                          <h3 className={`text-base font-extrabold ${c.color}`}>{c.val}</h3>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* STUDENT QUICK TOOLS & SHORTCUTS */}
+                  <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Student Quick Tools & Actions</h3>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button onClick={() => notify('📚 Homework Assignments List Opened')} className="px-3.5 py-1.5 rounded-xl bg-cyan-600 text-white text-xs font-bold shadow-md hover:bg-cyan-700">📚 My Homework</button>
+                      <button onClick={() => notify('📤 Assignment Submission Portal Opened')} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">📤 Submit Homework</button>
+                      <button onClick={() => notify('📝 Exam Routine Schedule Downloaded')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">📝 Exam Routine</button>
+                      <button onClick={() => notify('📊 Report Card PDF Opened')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold border border-emerald-200">📊 My Marks & Grades</button>
+                      <button onClick={() => notify('📖 Borrowed Books Catalog Opened')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold border border-blue-200">📖 Library Books</button>
+                      <button onClick={() => notify('🚌 Bus Tracker: Route #4 is 5 Mins Away')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-xs font-bold border border-amber-200">🚌 Track School Bus</button>
+                      <button onClick={() => notify('💬 Message Sent to Class Teacher (Emily Watson)')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 text-xs font-bold border border-rose-200">💬 Contact Teacher</button>
+                    </div>
+                  </div>
+
+                  {/* THREE SPECIALIZED STUDENT PANELS */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    {/* 1. TODAY'S CLASS SCHEDULE (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>⏰</span> Today's Class Routine
+                        </h3>
+                        <span className="text-xs text-cyan-600 font-bold">Grade 10-A</span>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3.5 bg-cyan-50 dark:bg-cyan-950/40 rounded-2xl border border-cyan-200 flex justify-between items-center">
+                          <div>
+                            <p className="font-extrabold text-cyan-900 dark:text-cyan-200">Mathematics (Algebra)</p>
+                            <p className="text-cyan-700 dark:text-cyan-300 text-[11px]">09:15 AM - 10:00 AM • Room 204</p>
+                          </div>
+                          <span className="px-2 py-0.5 rounded bg-cyan-600 text-white text-[10px] font-bold">Period 1</span>
+                        </div>
+
+                        <div className="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200 flex justify-between items-center">
+                          <div>
+                            <p className="font-extrabold text-indigo-900 dark:text-indigo-200">Applied Physics Practical</p>
+                            <p className="text-indigo-700 dark:text-indigo-300 text-[11px]">10:15 AM - 11:00 AM • Science Lab 1</p>
+                          </div>
+                          <span className="px-2 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold">Period 2</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. PENDING HOMEWORK & ASSIGNMENTS (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>📚</span> Pending Homework Tasks
+                        </h3>
+                        <span className="text-xs text-amber-600 font-bold">2 Tasks Due</span>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 space-y-2">
+                          <div className="flex justify-between font-bold text-amber-900 dark:text-amber-200">
+                            <span>Algebra Chapter 4 Practice</span>
+                            <span className="text-[10px] bg-amber-200 dark:bg-amber-800 px-1.5 py-0.5 rounded">Due Tomorrow</span>
+                          </div>
+                          <p className="text-amber-700 dark:text-amber-300 text-[11px]">Teacher: Emily Watson • Page 142 Ex. 4.2</p>
+                          <button onClick={() => notify('📤 Uploading Assignment Solution File...')} className="w-full py-1.5 bg-amber-600 text-white rounded-lg font-bold text-xs hover:bg-amber-700">
+                            📤 Submit Homework File
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. REPORT CARD & GRADES SUMMARY (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>📊</span> Academic Performance Summary
+                        </h3>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">GPA: 3.85</span>
+                      </div>
+                      <div className="space-y-2.5 text-xs">
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Mathematics:</span>
+                          <span className="font-extrabold text-emerald-600">A+ (96%)</span>
+                        </div>
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Computer Science:</span>
+                          <span className="font-extrabold text-emerald-600">A+ (98%)</span>
+                        </div>
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Physics & General Science:</span>
+                          <span className="font-extrabold text-purple-600">A (90%)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+              )}
+
               {/* DEDICATED VICE PRINCIPAL DASHBOARD (WHEN LOGGED IN AS VICE_PRINCIPAL) */}
               {currentTab === 'dashboard' && currentRole === 'VICE_PRINCIPAL' && (
                 <div className="space-y-8 animate-in fade-in duration-300">
@@ -656,164 +814,6 @@
                 </div>
               )}
 
-              {/* DEDICATED STUDENT DASHBOARD (LOGGED IN AS STUDENT) */}
-              {currentTab === 'dashboard' && currentRole === 'STUDENT' && (
-                <div className="space-y-8 animate-in fade-in duration-300">
-                  
-                  {/* STUDENT HERO BANNER */}
-                  <div className="p-6 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div className="space-y-2">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">
-                        <span>🎒 Student Portal</span>
-                        <span>•</span>
-                        <span>Grade 10-A (Red House)</span>
-                      </div>
-                      <h2 className="text-2xl font-black tracking-tight">Welcome Back, {currentUser.name}! 🎒</h2>
-                      <p className="text-xs text-blue-100 max-w-xl font-medium">
-                        Track your classes, homework assignments, exam schedules, attendance rate, report card grades, and library books.
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <button onClick={() => notify('📚 Viewing Pending Homework')} className="px-4 py-2.5 bg-white text-blue-900 font-extrabold text-xs rounded-2xl shadow-md hover:bg-slate-50 transition-colors">
-                        📚 View Homework (2)
-                      </button>
-                      <button onClick={() => notify('📝 Opened Mid-Term Exam Schedule')} className="px-4 py-2.5 bg-cyan-950/60 hover:bg-cyan-950 text-white font-extrabold text-xs rounded-2xl border border-white/20 transition-colors">
-                        📝 Exam Timetable
-                      </button>
-                      <button onClick={() => notify('📊 Report Card Downloaded (GPA 3.85)')} className="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs rounded-2xl shadow-md transition-colors">
-                        📊 Download Report Card
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 10 STUDENT ACADEMIC OVERVIEW METRICS (CARDS) */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">My Academic Status</h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 text-[10px] font-extrabold">
-                        🎒 Student View Access
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
-                      {[
-                        { title: 'My GPA', val: '3.85 / 4.0', icon: '📊', color: 'text-cyan-600 dark:text-cyan-400' },
-                        { title: 'Attendance Rate', val: '98.2%', icon: '📅', color: 'text-emerald-600 dark:text-emerald-400' },
-                        { title: 'Pending Homework', val: '2 Tasks', icon: '📚', color: 'text-amber-600 dark:text-amber-400' },
-                        { title: 'Periods Today', val: '4 Classes', icon: '⏰', color: 'text-purple-600 dark:text-purple-400' },
-                        { title: 'Upcoming Exam', val: 'Q3 Mid-Term', icon: '📝', color: 'text-rose-600 dark:text-rose-400' },
-                        { title: 'Library Books', val: '2 Issued', icon: '📖', color: 'text-indigo-600 dark:text-indigo-400' },
-                        { title: 'Fee Status', val: '✅ Clear', icon: '💰', color: 'text-emerald-600 dark:text-emerald-400' },
-                        { title: 'Bus Route', val: 'Route #4', icon: '🚌', color: 'text-blue-600 dark:text-blue-400' },
-                        { title: 'House Points', val: '145 Pts', icon: '🏠', color: 'text-pink-600 dark:text-pink-400' },
-                        { title: 'School Notices', val: '3 Bulletins', icon: '📢', color: 'text-violet-600 dark:text-violet-400' },
-                      ].map((c, i) => (
-                        <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
-                          <div className="flex justify-between text-[10px] text-slate-400 font-bold">
-                            <span className="truncate">{c.title}</span>
-                            <span>{c.icon}</span>
-                          </div>
-                          <h3 className={`text-base font-extrabold ${c.color}`}>{c.val}</h3>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* STUDENT QUICK TOOLS & SHORTCUTS */}
-                  <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
-                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Student Quick Tools & Actions</h3>
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <button onClick={() => notify('📚 Homework Assignments List Opened')} className="px-3.5 py-1.5 rounded-xl bg-cyan-600 text-white text-xs font-bold shadow-md hover:bg-cyan-700">📚 My Homework</button>
-                      <button onClick={() => notify('📤 Assignment Submission Portal Opened')} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">📤 Submit Homework</button>
-                      <button onClick={() => notify('📝 Exam Routine Schedule Downloaded')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">📝 Exam Routine</button>
-                      <button onClick={() => notify('📊 Report Card PDF Opened')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold border border-emerald-200">📊 My Marks & Grades</button>
-                      <button onClick={() => notify('📖 Borrowed Books Catalog Opened')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold border border-blue-200">📖 Library Books</button>
-                      <button onClick={() => notify('🚌 Bus Tracker: Route #4 is 5 Mins Away')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-xs font-bold border border-amber-200">🚌 Track School Bus</button>
-                      <button onClick={() => notify('💬 Message Sent to Class Teacher (Emily Watson)')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 text-xs font-bold border border-rose-200">💬 Contact Teacher</button>
-                    </div>
-                  </div>
-
-                  {/* THREE SPECIALIZED STUDENT PANELS */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    {/* 1. TODAY'S CLASS SCHEDULE (1 COL) */}
-                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                          <span>⏰</span> Today's Class Routine
-                        </h3>
-                        <span className="text-xs text-cyan-600 font-bold">Grade 10-A</span>
-                      </div>
-                      <div className="space-y-3 text-xs">
-                        <div className="p-3.5 bg-cyan-50 dark:bg-cyan-950/40 rounded-2xl border border-cyan-200 flex justify-between items-center">
-                          <div>
-                            <p className="font-extrabold text-cyan-900 dark:text-cyan-200">Mathematics (Algebra)</p>
-                            <p className="text-cyan-700 dark:text-cyan-300 text-[11px]">09:15 AM - 10:00 AM • Room 204</p>
-                          </div>
-                          <span className="px-2 py-0.5 rounded bg-cyan-600 text-white text-[10px] font-bold">Period 1</span>
-                        </div>
-
-                        <div className="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200 flex justify-between items-center">
-                          <div>
-                            <p className="font-extrabold text-indigo-900 dark:text-indigo-200">Applied Science Practical</p>
-                            <p className="text-indigo-700 dark:text-indigo-300 text-[11px]">10:15 AM - 11:00 AM • Science Lab 1</p>
-                          </div>
-                          <span className="px-2 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold">Period 2</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 2. PENDING HOMEWORK & ASSIGNMENTS (1 COL) */}
-                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                          <span>📚</span> Pending Homework Tasks
-                        </h3>
-                        <span className="text-xs text-amber-600 font-bold">2 Tasks Due</span>
-                      </div>
-                      <div className="space-y-3 text-xs">
-                        <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 space-y-2">
-                          <div className="flex justify-between font-bold text-amber-900 dark:text-amber-200">
-                            <span>Algebra Chapter 4 Practice</span>
-                            <span className="text-[10px] bg-amber-200 dark:bg-amber-800 px-1.5 py-0.5 rounded">Due Tomorrow</span>
-                          </div>
-                          <p className="text-amber-700 dark:text-amber-300 text-[11px]">Teacher: Emily Watson • Page 142 Ex. 4.2</p>
-                          <button onClick={() => notify('📤 Uploading Assignment Solution File...')} className="w-full py-1.5 bg-amber-600 text-white rounded-lg font-bold text-xs hover:bg-amber-700">
-                            📤 Submit Homework File
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3. REPORT CARD & GRADES SUMMARY (1 COL) */}
-                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                          <span>📊</span> Academic Performance Summary
-                        </h3>
-                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">GPA: 3.85</span>
-                      </div>
-                      <div className="space-y-2.5 text-xs">
-                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-                          <span className="text-slate-500">Mathematics:</span>
-                          <span className="font-extrabold text-emerald-600">A+ (96%)</span>
-                        </div>
-                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-                          <span className="text-slate-500">Computer Science:</span>
-                          <span className="font-extrabold text-emerald-600">A+ (98%)</span>
-                        </div>
-                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-                          <span className="text-slate-500">Physics & General Science:</span>
-                          <span className="font-extrabold text-purple-600">A (90%)</span>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div>
-              )}
-
               {/* DEDICATED ACCOUNTANT FINANCIAL DASHBOARD */}
               {currentTab === 'dashboard' && currentRole === 'ACCOUNTANT' && (
                 <div className="space-y-8 animate-in fade-in duration-300">
@@ -838,7 +838,7 @@
                       <button onClick={() => setShowAdmissionModal(true)} className="px-4 py-2.5 bg-emerald-950/60 hover:bg-emerald-950 text-white font-extrabold text-xs rounded-2xl border border-white/20 transition-colors">
                         🎓 Admit Student & Setup Fee
                       </button>
-                      <button onClick={() => notify('🧾 Bulk Invoice Generator Started')} className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-2xl shadow-md transition-colors">
+                      <button onClick={() => notify('Receipt Invoice Generator Started')} className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-2xl shadow-md transition-colors">
                         🧾 Issue Invoices
                       </button>
                     </div>
