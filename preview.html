@@ -111,6 +111,12 @@
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
       const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: true, Teachers: true, Academics: true, Examinations: true, Communication: true });
 
+      // Leave Approval State for Principal
+      const [pendingLeaves, setPendingLeaves] = useState([
+        { id: 'l1', teacher: 'Emily Watson', role: 'Math Faculty', duration: '2 Days (Aug 05 - Aug 06)', reason: 'Medical Checkup & Fever', status: 'PENDING' },
+        { id: 'l2', teacher: 'Richard Feynman', role: 'Physics Faculty', duration: '1 Day (Aug 08)', reason: 'Academic Conference Presentation', status: 'PENDING' },
+      ]);
+
       // Teacher Form State
       const [teacherForm, setTeacherForm] = useState({ firstName: '', lastName: '', email: '', subject: 'Mathematics', qualification: 'M.Sc. Physics / B.Ed', phone: '+977 9801234567' });
 
@@ -178,6 +184,11 @@
         const newStatus = isCurrentlyBlocked ? 'ACTIVE' : 'BLOCKED';
         setTeachers(teachers.map(t => t.id === teacherToToggle.id ? { ...t, status: newStatus } : t));
         notify(`${newStatus === 'BLOCKED' ? '🚫' : '✅'} Teacher "${teacherToToggle.name}" has been ${newStatus} by ${currentRole.replace('_', ' ')}!`);
+      };
+
+      const handleApproveLeave = (leaveId, teacherName, action) => {
+        setPendingLeaves(pendingLeaves.filter(l => l.id !== leaveId));
+        notify(`${action === 'APPROVE' ? '✅ Approved' : '❌ Rejected'} leave request for ${teacherName}!`);
       };
 
       // SPECIFIC PRINCIPAL RECOMMENDED SIDEBAR
@@ -256,7 +267,7 @@
 
       // Initialize Performance Chart for Principal Dashboard
       useEffect(() => {
-        if (currentTab === 'dashboard' && IS_PRINCIPAL_EXECUTIVE && window.Chart) {
+        if (currentTab === 'dashboard' && (currentRole === 'PRINCIPAL' || IS_PRINCIPAL_EXECUTIVE) && window.Chart) {
           const ctxP = document.getElementById('principalPerformanceChart');
           if (ctxP) {
             if (chartRefPerformance.current) chartRefPerformance.current.destroy();
@@ -484,6 +495,201 @@
                 </div>
               )}
 
+              {/* DEDICATED PRINCIPAL DASHBOARD (WHEN LOGGED IN AS PRINCIPAL) */}
+              {currentTab === 'dashboard' && currentRole === 'PRINCIPAL' && (
+                <div className="space-y-8 animate-in fade-in duration-300">
+                  
+                  {/* PRINCIPAL EXECUTIVE HERO BANNER */}
+                  <div className="p-6 bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">
+                        <span>🎓 Principal Executive Portal</span>
+                        <span>•</span>
+                        <span>Highest Academic Authority</span>
+                      </div>
+                      <h2 className="text-2xl font-black tracking-tight">Welcome, Dr. Robert Langdon! 🏛️</h2>
+                      <p className="text-xs text-purple-100 max-w-xl font-medium">
+                        Overseeing academics, faculty performance, student discipline, exam schedules, and overall institutional excellence.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-4 py-2.5 bg-white text-purple-700 font-extrabold text-xs rounded-2xl shadow-md hover:bg-slate-50 transition-colors">
+                        ➕ Admit New Student
+                      </button>
+                      <button onClick={() => setShowAddTeacherModal(true)} className="px-4 py-2.5 bg-purple-950/60 hover:bg-purple-950 text-white font-extrabold text-xs rounded-2xl border border-white/20 transition-colors">
+                        👨‍🏫 Add Teacher
+                      </button>
+                      <button onClick={() => notify('📢 Institutional Broadcast Sent to All Faculty & Parents!')} className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-2xl shadow-md transition-colors">
+                        📢 Broadcast Notice
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 10 PRINCIPAL OVERVIEW CARDS */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Principal Executive Metrics</h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-extrabold">
+                        🛡️ Operational Authority • Block Permission Active
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+                      {[
+                        { title: 'Total Students', val: students.length, icon: '👨‍🎓', color: 'text-purple-600 dark:text-purple-400' },
+                        { title: 'Total Teachers', val: teachers.length, icon: '👨‍🏫', color: 'text-indigo-600 dark:text-indigo-400' },
+                        { title: 'Total Classes', val: '12', icon: '🏫', color: 'text-blue-600 dark:text-blue-400' },
+                        { title: 'Attendance Today', val: '96.4%', icon: '📅', color: 'text-emerald-600 dark:text-emerald-400' },
+                        { title: 'Upcoming Exams', val: '3', icon: '📝', color: 'text-amber-600 dark:text-amber-400' },
+                        { title: 'Student Perf.', val: '88.5%', icon: '📊', color: 'text-cyan-600 dark:text-cyan-400' },
+                        { title: 'Fee Collection', val: '$64,000', icon: '💰', color: 'text-slate-700 dark:text-slate-300' },
+                        { title: 'Active Notices', val: '5', icon: '📢', color: 'text-violet-600 dark:text-violet-400' },
+                        { title: 'Today\'s Birthdays', val: '2', icon: '🎂', color: 'text-pink-600 dark:text-pink-400' },
+                        { title: 'Discipline Cases', val: '2 Active', icon: '🚨', color: 'text-rose-600 dark:text-rose-400' },
+                      ].map((c, i) => (
+                        <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
+                          <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                            <span className="truncate">{c.title}</span>
+                            <span>{c.icon}</span>
+                          </div>
+                          <h3 className={`text-base font-extrabold ${c.color}`}>{c.val}</h3>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* PRINCIPAL QUICK ACTIONS */}
+                  <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Principal Operational Shortcuts</h3>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">➕ Admit Student</button>
+                      <button onClick={() => setShowAddTeacherModal(true)} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">👨‍🏫 Add Faculty</button>
+                      <button onClick={() => notify('✅ All Pending Faculty Leaves Processed!')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold border border-emerald-200">✅ Approve Faculty Leave</button>
+                      <button onClick={() => notify('📅 Q3 Exam Timetable Drafted!')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold border border-blue-200">📅 Create Exam Schedule</button>
+                      <button onClick={() => notify('📝 Final School Results Published!')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 text-xs font-bold border border-rose-200">📝 Publish Results</button>
+                      <button onClick={() => notify('📢 Broadcasting Notice to Parents & Teachers...')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-xs font-bold border border-amber-200">📢 Publish Notice</button>
+                      <button onClick={() => notify('📊 Institutional Audit Summary Exported!')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700">📄 Generate Audit Report</button>
+                    </div>
+                  </div>
+
+                  {/* PRINCIPAL PANELS (ACADEMIC ANALYTICS & FACULTY LEAVE APPROVAL) */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    {/* ACADEMIC PERFORMANCE & DISCIPLINE (2 COLS) */}
+                    <div className="lg:col-span-2 space-y-6">
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>📊</span> School Academic Performance Analytics
+                          </h3>
+                          <span className="text-xs text-slate-400 font-semibold">Grade 10 vs Grade 9 Term Averages</span>
+                        </div>
+                        <div className="h-56 relative"><canvas id="principalPerformanceChart"></canvas></div>
+                      </div>
+
+                      {/* DISCIPLINE CASES MONITOR */}
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🚨</span> Active Discipline & Counseling Monitor
+                          </h3>
+                          <button onClick={() => notify('New Discipline Case Logged')} className="text-xs font-bold text-rose-600 hover:underline">+ File Incident</button>
+                        </div>
+                        <div className="space-y-3 text-xs">
+                          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-2xl border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                              <p className="font-extrabold text-rose-900 dark:text-rose-200">Lucas Davis (Grade 11-B)</p>
+                              <p className="text-rose-700 dark:text-rose-300 text-[11px]">Unexcused Absence & Behavioral Incident in Science Lab</p>
+                            </div>
+                            <button onClick={() => notify('Formal Warning Issued to Lucas Davis')} className="px-3.5 py-1.5 bg-rose-600 text-white rounded-xl font-bold shadow-xs hover:bg-rose-700 shrink-0">
+                              Issue Warning
+                            </button>
+                          </div>
+
+                          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                              <p className="font-extrabold text-amber-900 dark:text-amber-200">Ethan Hunt (Grade 10-A)</p>
+                              <p className="text-amber-700 dark:text-amber-300 text-[11px]">Repeated Homework Submission Delay</p>
+                            </div>
+                            <button onClick={() => notify('Counseling Session Scheduled')} className="px-3.5 py-1.5 bg-amber-600 text-white rounded-xl font-bold shadow-xs hover:bg-amber-700 shrink-0">
+                              Schedule Counseling
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* FACULTY LEAVE APPROVAL & FINANCIAL OVERVIEW (1 COL) */}
+                    <div className="space-y-6">
+                      
+                      {/* FACULTY LEAVE APPROVAL (EXCLUSIVE TO PRINCIPAL) */}
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🏖️</span> Faculty Leave Requests
+                          </h3>
+                          <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-extrabold text-[10px]">
+                            {pendingLeaves.length} Pending
+                          </span>
+                        </div>
+
+                        {pendingLeaves.length === 0 ? (
+                          <p className="text-xs text-slate-400 text-center py-4 font-semibold">🎉 All faculty leave requests cleared!</p>
+                        ) : (
+                          <div className="space-y-3 text-xs">
+                            {pendingLeaves.map(l => (
+                              <div key={l.id} className="p-3.5 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-900/60 space-y-2">
+                                <div className="flex justify-between font-bold text-slate-900 dark:text-white">
+                                  <span>{l.teacher}</span>
+                                  <span className="text-[10px] text-purple-600 font-extrabold">{l.role}</span>
+                                </div>
+                                <p className="text-[11px] text-slate-500">📅 {l.duration}</p>
+                                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-medium italic">"{l.reason}"</p>
+                                <div className="flex items-center gap-2 pt-1">
+                                  <button onClick={() => handleApproveLeave(l.id, l.teacher, 'APPROVE')} className="flex-1 py-1.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700">
+                                    ✓ Approve
+                                  </button>
+                                  <button onClick={() => handleApproveLeave(l.id, l.teacher, 'REJECT')} className="flex-1 py-1.5 bg-rose-600 text-white font-bold rounded-xl text-xs hover:bg-rose-700">
+                                    ✕ Reject
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* FINANCIAL SUMMARY (VIEW-ONLY FOR PRINCIPAL) */}
+                      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                        <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>💰</span> Fee Collection Summary
+                          </h3>
+                          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold text-[10px]">View Only</span>
+                        </div>
+                        <div className="space-y-2.5 text-xs">
+                          <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                            <span className="text-slate-500">Total Collected This Term:</span>
+                            <span className="font-extrabold text-emerald-600">$64,000</span>
+                          </div>
+                          <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                            <span className="text-slate-500">Outstanding Dues:</span>
+                            <span className="font-extrabold text-rose-600">$8,500</span>
+                          </div>
+                          <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                            <span className="text-slate-500">Merit Scholarships:</span>
+                            <span className="font-extrabold text-purple-600">$4,200</span>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </div>
+              )}
+
               {/* DEDICATED TEACHER DASHBOARD (WHEN LOGGED IN AS TEACHER) */}
               {currentTab === 'dashboard' && currentRole === 'TEACHER' && (
                 <div className="space-y-8 animate-in fade-in duration-300">
@@ -654,14 +860,14 @@
                 </div>
               )}
 
-              {/* EXECUTIVE / ADMIN / PRINCIPAL DASHBOARD (OTHER ROLES) */}
-              {currentTab === 'dashboard' && currentRole !== 'TEACHER' && (
+              {/* SYSTEM ADMIN DASHBOARD (FOR SUPER ADMIN & SCHOOL ADMIN) */}
+              {currentTab === 'dashboard' && currentRole !== 'TEACHER' && currentRole !== 'PRINCIPAL' && (
                 <div className="space-y-8">
                   
                   {/* OVERVIEW CARDS */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">{currentRole.replace('_', ' ')} Overview Cards</h2>
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">{currentRole.replace('_', ' ')} Executive System Overview</h2>
                       <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-extrabold">
                         {CAN_DELETE_DATA ? '👑 Super Admin / Admin Full Data Erasure Access' : '🛡️ Executive Block / Suspend Access Active'}
                       </span>
@@ -693,7 +899,7 @@
 
                   {/* QUICK ACTIONS BAR */}
                   <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
-                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">{currentRole.replace('_', ' ')} Executive Quick Actions</h3>
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">{currentRole.replace('_', ' ')} Quick Actions</h3>
                     <div className="flex flex-wrap items-center gap-2.5">
                       {CAN_ADMIT_STUDENTS && (
                         <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">
@@ -707,37 +913,6 @@
                       <button onClick={() => notify('Publishing Notice to Parent Portal...')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200">📢 Publish Notice</button>
                       <button onClick={() => notify('Opening Performance Analytics...')} className="px-3.5 py-1.5 rounded-xl bg-cyan-50 text-cyan-700 text-xs font-bold border border-cyan-200">📊 View School Performance</button>
                       <button onClick={() => notify('Exporting Comprehensive Institutional Reports...')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300">📄 Generate Reports</button>
-                    </div>
-                  </div>
-
-                  {/* ACADEMIC PERFORMANCE & DISCIPLINE PANELS */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                          <span>📊</span> School Academic Performance Analytics
-                        </h3>
-                      </div>
-                      <div className="h-56 relative"><canvas id="principalPerformanceChart"></canvas></div>
-                    </div>
-
-                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
-                      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                          <span>🚨</span> Active Discipline & Counseling Cases
-                        </h3>
-                        <button onClick={() => notify('New Incident Logged')} className="text-xs font-bold text-rose-600 hover:underline">+ File Incident</button>
-                      </div>
-                      <div className="space-y-3 text-xs">
-                        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 flex justify-between items-center">
-                          <div><p className="font-bold text-rose-900 dark:text-rose-200">Lucas Davis (Grade 11-B)</p><p className="text-rose-700 dark:text-rose-300">Unexcused Absence & Behavioral Incident</p></div>
-                          <button onClick={() => notify('Discipline Warning Issued')} className="px-3 py-1 bg-rose-600 text-white rounded-lg font-bold">Issue Warning</button>
-                        </div>
-                        <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 flex justify-between items-center">
-                          <div><p className="font-bold text-amber-900 dark:text-amber-200">Ethan Hunt (Grade 10-A)</p><p className="text-amber-700 dark:text-amber-300">Late Submission Warning</p></div>
-                          <button onClick={() => notify('Counseling Session Scheduled')} className="px-3 py-1 bg-amber-600 text-white rounded-lg font-bold">Schedule Counseling</button>
-                        </div>
-                      </div>
                     </div>
                   </div>
 
