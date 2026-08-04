@@ -88,7 +88,7 @@
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('PRINCIPAL');
+      const [currentRole, setCurrentRole] = useState('SCHOOL_ADMIN');
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
@@ -111,7 +111,7 @@
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
       const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: false, Teachers: false, Academics: false, Examinations: false, Communication: false });
 
-      // Leave Approval State for Principal
+      // Leave Approval State for Principal / Admin
       const [pendingLeaves, setPendingLeaves] = useState([
         { id: 'l1', teacher: 'Emily Watson', role: 'Math Faculty', duration: '2 Days (Aug 05 - Aug 06)', reason: 'Medical Checkup & Fever', status: 'PENDING' },
         { id: 'l2', teacher: 'Richard Feynman', role: 'Physics Faculty', duration: '1 Day (Aug 08)', reason: 'Academic Conference Presentation', status: 'PENDING' },
@@ -144,14 +144,14 @@
 
       const chartRefPerformance = useRef(null);
 
-      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.PRINCIPAL;
+      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.SCHOOL_ADMIN;
 
       const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'].includes(currentRole);
       
       // STRICT RBAC: Super Admin, School Admin, Principal, Vice Principal, AND ACCOUNTANT can admit students
       const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
 
-      // STRICT RBAC RULE ASKED BY USER:
+      // STRICT RBAC RULE:
       // ONLY Super Admin and School Admin can DELETE data
       const CAN_DELETE_DATA = ['SUPER_ADMIN', 'SCHOOL_ADMIN'].includes(currentRole);
 
@@ -191,8 +191,8 @@
         notify(`${action === 'APPROVE' ? '✅ Approved' : '❌ Rejected'} leave request for ${teacherName}!`);
       };
 
-      // SPECIFIC PRINCIPAL RECOMMENDED SIDEBAR
-      const PRINCIPAL_SIDEBAR = [
+      // SCHOOL ADMIN SIDEBAR MENU
+      const SIDEBAR_NAV = [
         { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
         {
           group: 'Students', icon: '🎓', subItems: [
@@ -265,9 +265,9 @@
         else document.documentElement.classList.remove('dark');
       }, [isDark]);
 
-      // Initialize Performance Chart for Principal Dashboard
+      // Initialize Performance Chart for Principal / Admin Dashboard
       useEffect(() => {
-        if (currentTab === 'dashboard' && (currentRole === 'PRINCIPAL' || IS_PRINCIPAL_EXECUTIVE) && window.Chart) {
+        if (currentTab === 'dashboard' && (currentRole === 'PRINCIPAL' || currentRole === 'SCHOOL_ADMIN' || currentRole === 'SUPER_ADMIN') && window.Chart) {
           const ctxP = document.getElementById('principalPerformanceChart');
           if (ctxP) {
             if (chartRefPerformance.current) chartRefPerformance.current.destroy();
@@ -345,7 +345,7 @@
       return (
         <div className="flex min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
           
-          {/* RECOMMENDED PRINCIPAL SIDEBAR (UNTOUCHED) */}
+          {/* SIDEBAR NAVIGATION */}
           <aside className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between h-screen sticky top-0 z-30 transition-all duration-300 shadow-sm`}>
             <div>
               <div 
@@ -375,7 +375,7 @@
               )}
 
               <nav className="px-3 py-2 space-y-1.5 max-h-[calc(100vh-190px)] overflow-y-auto">
-                {PRINCIPAL_SIDEBAR.map((item, idx) => {
+                {SIDEBAR_NAV.map((item, idx) => {
                   if (item.subItems) {
                     const isOpen = openSidebarCategory[item.group];
                     return (
@@ -496,6 +496,166 @@
               {notification && (
                 <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950 border border-purple-200 text-purple-800 text-xs font-bold flex items-center gap-2">
                   <span>ℹ️</span> {notification}
+                </div>
+              )}
+
+              {/* DEDICATED SCHOOL ADMIN DASHBOARD (LOGGED IN AS SCHOOL_ADMIN) */}
+              {currentTab === 'dashboard' && currentRole === 'SCHOOL_ADMIN' && (
+                <div className="space-y-8 animate-in fade-in duration-300">
+                  
+                  {/* SCHOOL ADMIN HERO BANNER */}
+                  <div className="p-6 bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">
+                        <span>🛡️ School Administrator Portal</span>
+                        <span>•</span>
+                        <span>Single Institution: Pathaibhara Academy</span>
+                      </div>
+                      <h2 className="text-2xl font-black tracking-tight">Welcome, {currentUser.name}! 🛡️</h2>
+                      <p className="text-xs text-blue-100 max-w-xl font-medium">
+                        Full operational administration: Students, Teachers, Admissions, Fees, Timetable, Exams, Logistics & School Settings.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-4 py-2.5 bg-white text-blue-800 font-extrabold text-xs rounded-2xl shadow-md hover:bg-slate-50 transition-colors">
+                        ➕ Admit Student
+                      </button>
+                      <button onClick={() => setShowAddTeacherModal(true)} className="px-4 py-2.5 bg-indigo-950/60 hover:bg-indigo-950 text-white font-extrabold text-xs rounded-2xl border border-white/20 transition-colors">
+                        👨‍🏫 Add Teacher
+                      </button>
+                      <button onClick={() => notify('⚙️ School Configuration Settings Opened')} className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-2xl shadow-md transition-colors">
+                        ⚙️ School Settings
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 10 SCHOOL ADMIN OPERATIONAL OVERVIEW CARDS */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">School Operations Overview</h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold">
+                        👑 Full Data Deletion & System Management Access
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+                      {[
+                        { title: 'Total Students', val: students.length, icon: '👨‍🎓', color: 'text-purple-600 dark:text-purple-400' },
+                        { title: 'Total Teachers', val: teachers.length, icon: '👨‍🏫', color: 'text-indigo-600 dark:text-indigo-400' },
+                        { title: 'Classes & Sections', val: '12 / 24', icon: '🏫', color: 'text-blue-600 dark:text-blue-400' },
+                        { title: 'Attendance Today', val: '96.4%', icon: '📅', color: 'text-emerald-600 dark:text-emerald-400' },
+                        { title: 'Exams & Results', val: '3 Active', icon: '📝', color: 'text-amber-600 dark:text-amber-400' },
+                        { title: 'Fee Collection', val: '$64,000', icon: '💰', color: 'text-cyan-600 dark:text-cyan-400' },
+                        { title: 'Library Books', val: '1,250', icon: '📖', color: 'text-violet-600 dark:text-violet-400' },
+                        { title: 'Transport Fleet', val: '6 Buses', icon: '🚌', color: 'text-amber-600 dark:text-amber-400' },
+                        { title: 'Hostel Beds', val: '85 / 120', icon: '🏢', color: 'text-teal-600 dark:text-teal-400' },
+                        { title: 'Notices & Bulletins', val: '5 Active', icon: '📢', color: 'text-rose-600 dark:text-rose-400' },
+                      ].map((c, i) => (
+                        <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
+                          <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                            <span className="truncate">{c.title}</span>
+                            <span>{c.icon}</span>
+                          </div>
+                          <h3 className={`text-base font-extrabold ${c.color}`}>{c.val}</h3>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* SCHOOL ADMIN QUICK ACTIONS BAR */}
+                  <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">School Admin Control Center</h3>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">➕ Admit Student</button>
+                      <button onClick={() => setShowAddTeacherModal(true)} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">👨‍🏫 Add Teacher</button>
+                      <button onClick={() => notify('💰 Opened Fee Collection & Ledger Manager')} className="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md hover:bg-emerald-700">💰 Fee Collection</button>
+                      <button onClick={() => notify('📅 Master Timetable Builder Opened')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold border border-blue-200">📅 Manage Timetable</button>
+                      <button onClick={() => notify('📝 Exam Schedules & Results Published')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-xs font-bold border border-amber-200">📝 Examinations & Results</button>
+                      <button onClick={() => notify('📢 Posted School Notice')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 text-xs font-bold border border-rose-200">📢 School Notices</button>
+                      <button onClick={() => notify('⚙️ School Settings Configured')} className="px-3.5 py-1.5 rounded-xl bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300 text-xs font-bold border border-cyan-200">⚙️ School Settings</button>
+                      <button onClick={() => notify('📄 Exported Full Operational Audit')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700">📄 Generate Reports</button>
+                    </div>
+                  </div>
+
+                  {/* THREE OPERATIONAL MODULE PANELS */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    {/* 1. ACADEMIC & CLASS MANAGEMENT (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>🏫</span> Classes, Sections & Subjects
+                        </h3>
+                        <span className="text-xs text-blue-600 font-bold">12 Classes</span>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3.5 bg-blue-50 dark:bg-blue-950/40 rounded-2xl border border-blue-200 flex justify-between items-center">
+                          <div>
+                            <p className="font-extrabold text-blue-900 dark:text-blue-200">Grade 10 (Sections A, B, C)</p>
+                            <p className="text-blue-700 dark:text-blue-300 text-[11px]">Subjects: Math, Physics, Chem, Eng</p>
+                          </div>
+                          <button onClick={() => notify('Editing Grade 10 Schedule')} className="px-2.5 py-1 bg-blue-600 text-white rounded-lg font-bold">Edit</button>
+                        </div>
+                        <div className="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200 flex justify-between items-center">
+                          <div>
+                            <p className="font-extrabold text-indigo-900 dark:text-indigo-200">Grade 9 (Sections A, B)</p>
+                            <p className="text-indigo-700 dark:text-indigo-300 text-[11px]">Subjects: Math, Bio, Social, Computer</p>
+                          </div>
+                          <button onClick={() => notify('Editing Grade 9 Schedule')} className="px-2.5 py-1 bg-indigo-600 text-white rounded-lg font-bold">Edit</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. INFRASTRUCTURE & LOGISTICS (LIBRARY, HOSTEL, TRANSPORT) (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>🚌</span> Logistics, Library & Hostel
+                        </h3>
+                        <span className="text-xs text-emerald-600 font-bold">Active Fleet</span>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">📖 Library Volume Catalog</span>
+                          <span className="font-extrabold text-purple-600">1,250 Books</span>
+                        </div>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">🚌 Transport Buses Operational</span>
+                          <span className="font-extrabold text-amber-600">6 Routes</span>
+                        </div>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">🏢 Hostel Occupancy</span>
+                          <span className="font-extrabold text-emerald-600">85 / 120 Beds</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. SCHOOL SETTINGS & SYSTEM STATUS (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>⚙️</span> School Settings & Systems
+                        </h3>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">Online</span>
+                      </div>
+                      <div className="space-y-2.5 text-xs">
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">School Name:</span>
+                          <span className="font-extrabold text-slate-900 dark:text-white">Pathaibhara Academy</span>
+                        </div>
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">SMS Gateway:</span>
+                          <span className="font-extrabold text-emerald-600">✓ Connected</span>
+                        </div>
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Auto DB Backup:</span>
+                          <span className="font-extrabold text-blue-600">Daily @ 02:00 AM</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
                 </div>
               )}
 
@@ -864,16 +1024,16 @@
                 </div>
               )}
 
-              {/* SYSTEM ADMIN DASHBOARD (FOR SUPER ADMIN & SCHOOL ADMIN) */}
-              {currentTab === 'dashboard' && currentRole !== 'TEACHER' && currentRole !== 'PRINCIPAL' && (
+              {/* SYSTEM ADMIN DASHBOARD (SUPER ADMIN) */}
+              {currentTab === 'dashboard' && currentRole === 'SUPER_ADMIN' && (
                 <div className="space-y-8">
                   
                   {/* OVERVIEW CARDS */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">{currentRole.replace('_', ' ')} Executive System Overview</h2>
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Super Admin Multi-School Network Overview</h2>
                       <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-extrabold">
-                        {CAN_DELETE_DATA ? '👑 Super Admin / Admin Full Data Erasure Access' : '🛡️ Executive Block / Suspend Access Active'}
+                        👑 Global Super Admin Full System Erasure Access
                       </span>
                     </div>
 
@@ -903,7 +1063,7 @@
 
                   {/* QUICK ACTIONS BAR */}
                   <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
-                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">{currentRole.replace('_', ' ')} Quick Actions</h3>
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Super Admin Network Control</h3>
                     <div className="flex flex-wrap items-center gap-2.5">
                       {CAN_ADMIT_STUDENTS && (
                         <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">
