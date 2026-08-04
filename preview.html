@@ -39,6 +39,20 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9999px; }
     .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+    /* Topographic background pattern overlay */
+    .topo-bg {
+      background-color: #eef5fc;
+      background-image: radial-gradient(#dbeafe 1px, transparent 1px), radial-gradient(#dbeafe 1px, #eef5fc 1px);
+      background-size: 40px 40px;
+      background-position: 0 0, 20px 20px;
+    }
+    .dark .topo-bg {
+      background-color: #0b0f17;
+      background-image: radial-gradient(#1e293b 1px, transparent 1px), radial-gradient(#1e293b 1px, #0b0f17 1px);
+      background-size: 40px 40px;
+      background-position: 0 0, 20px 20px;
+    }
   </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200">
@@ -88,7 +102,13 @@
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('STUDENT');
+      // AUTH & LOGIN STATE
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+      const [loginUsername, setLoginUsername] = useState('admin@sms.edu');
+      const [loginPassword, setLoginPassword] = useState('••••••••');
+      const [showPassword, setShowPassword] = useState(false);
+      const [currentRole, setCurrentRole] = useState('SCHOOL_ADMIN');
+
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
@@ -144,7 +164,7 @@
 
       const chartRefPerformance = useRef(null);
 
-      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.STUDENT;
+      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.SCHOOL_ADMIN;
 
       const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
       
@@ -157,6 +177,24 @@
 
       // Principal, Vice Principal, and Accountant can ONLY BLOCK data (not delete)
       const CAN_BLOCK_DATA = ['PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
+
+      const handleLoginSubmit = (e) => {
+        if (e) e.preventDefault();
+        setIsLoggedIn(true);
+        notify(`🔓 Authentication Successful! Welcome to ${currentRole.replace('_', ' ')} Dashboard.`);
+      };
+
+      const handleQuickDemoLogin = (roleCode, email) => {
+        setCurrentRole(roleCode);
+        setLoginUsername(email);
+        setIsLoggedIn(true);
+        notify(`🚀 Logged in as ${roleCode.replace('_', ' ')} (${email})`);
+      };
+
+      const handleLogout = () => {
+        setIsLoggedIn(false);
+        notify(`🔒 Logged out successfully.`);
+      };
 
       const handleDeleteStudent = (studentToDelete) => {
         if (window.confirm(`⚠️ [ADMIN ACTION] Are you sure you want to permanently delete student record: "${studentToDelete.name}" (${studentToDelete.admission})?`)) {
@@ -267,7 +305,7 @@
 
       // Initialize Performance Chart for Principal / Admin Dashboard
       useEffect(() => {
-        if (currentTab === 'dashboard' && (currentRole === 'PRINCIPAL' || currentRole === 'SCHOOL_ADMIN' || currentRole === 'SUPER_ADMIN' || currentRole === 'VICE_PRINCIPAL') && window.Chart) {
+        if (isLoggedIn && currentTab === 'dashboard' && (currentRole === 'PRINCIPAL' || currentRole === 'SCHOOL_ADMIN' || currentRole === 'SUPER_ADMIN' || currentRole === 'VICE_PRINCIPAL') && window.Chart) {
           const ctxP = document.getElementById('principalPerformanceChart');
           if (ctxP) {
             if (chartRefPerformance.current) chartRefPerformance.current.destroy();
@@ -284,7 +322,7 @@
             });
           }
         }
-      }, [currentTab, currentRole, isDark]);
+      }, [isLoggedIn, currentTab, currentRole, isDark]);
 
       const notify = (msg) => {
         setNotification(msg);
@@ -342,6 +380,192 @@
         notify(`👤 New Staff Member "${otherName}" [${otherForm.role}] successfully registered!`);
       };
 
+      // -------------------------------------------------------------
+      // 1. LOGIN SCREEN (WHEN NOT LOGGED IN)
+      // -------------------------------------------------------------
+      if (!isLoggedIn) {
+        return (
+          <div className="min-h-screen topo-bg flex flex-col justify-between items-center p-6 relative">
+            
+            {/* Top Bar Header */}
+            <header className="w-full max-w-5xl flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md">
+                  🏫
+                </div>
+                <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
+                  Pathaibhara <span className="text-purple-600 dark:text-purple-400">Academy</span>
+                </span>
+              </div>
+              <button 
+                onClick={() => setIsDark(!isDark)} 
+                className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold shadow-xs text-amber-500"
+              >
+                {isDark ? '☀️ Light Mode' : '🌙 Dark Mode'}
+              </button>
+            </header>
+
+            {/* Notification Toast */}
+            {notification && (
+              <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold rounded-2xl shadow-2xl border border-slate-700 animate-in fade-in duration-200 flex items-center gap-2">
+                <span>ℹ️</span> {notification}
+              </div>
+            )}
+
+            {/* LOGIN CARD CONTAINER (EXACT IMAGE REPLICA STYLING) */}
+            <div className="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row border border-slate-200/80 dark:border-slate-800 my-auto">
+              
+              {/* LEFT DARK SIDE PANEL */}
+              <div className="w-full md:w-5/12 bg-[#1b2228] p-10 flex flex-col justify-between text-white relative min-h-[380px]">
+                <div>
+                  <h2 className="text-xl font-black tracking-tight text-white/90">
+                    {currentRole === 'STUDENT' ? 'Student portal' : currentRole === 'TEACHER' ? 'Faculty portal' : currentRole === 'ACCOUNTANT' ? 'Finance portal' : 'Admin portal'}
+                  </h2>
+                </div>
+
+                {/* Center Shield Graphic */}
+                <div className="my-auto flex flex-col items-center justify-center text-center space-y-4 py-8">
+                  <div className="w-28 h-28 rounded-3xl bg-gradient-to-tr from-emerald-400 via-teal-400 to-cyan-400 p-1 shadow-2xl flex items-center justify-center">
+                    <div className="w-full h-full bg-[#1b2228] rounded-[22px] flex items-center justify-center">
+                      <svg className="w-14 h-14 text-cyan-400 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <circle cx="12" cy="10" r="2" />
+                        <path d="M12 12v3" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-[11px] text-slate-400 font-medium">
+                  Pathaibhara Institutional Access • Secure 256-bit SSL
+                </div>
+              </div>
+
+              {/* RIGHT WHITE FORM PANEL */}
+              <div className="w-full md:w-7/12 bg-white dark:bg-slate-900 p-8 md:p-12 flex flex-col justify-between space-y-6">
+                <div>
+                  
+                  {/* SCHOOL NAME LOGO HEADER */}
+                  <div className="flex items-center gap-3 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-extrabold flex items-center justify-center text-xl shadow-md shrink-0">
+                      🏫
+                    </div>
+                    <div>
+                      <h1 className="text-lg font-black tracking-tight text-slate-900 dark:text-white leading-tight">
+                        Pathaibhara <span className="text-purple-600 dark:text-purple-400">Secondary School</span>
+                      </h1>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Institutional SMS Login Portal</p>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6">
+                    {currentRole.replace('_', ' ')} login
+                  </h3>
+
+                  {/* FORM FIELDS */}
+                  <form onSubmit={handleLoginSubmit} className="space-y-5">
+                    
+                    {/* Login Username */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Login</label>
+                      <input
+                        type="text"
+                        value={loginUsername}
+                        onChange={(e) => setLoginUsername(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs"
+                        placeholder="Enter login"
+                        required
+                      />
+                    </div>
+
+                    {/* Password */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Password</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:outline-none text-xs font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-white pr-11 shadow-xs"
+                          placeholder="Enter password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm p-1"
+                        >
+                          {showPassword ? '🙈' : '👁️'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="flex items-center justify-between pt-3">
+                      <a 
+                        href="#forgot" 
+                        onClick={(e) => { e.preventDefault(); notify('🔑 Password reset link dispatched to email!'); }} 
+                        className="text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
+                      >
+                        Forgot your password?
+                      </a>
+
+                      <button 
+                        type="submit" 
+                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all"
+                      >
+                        Sign in
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+
+                {/* DEMO ROLE SELECTOR HELPERS */}
+                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">✨ One-Click Demo Role Accounts</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { code: 'SUPER_ADMIN', name: '👑 Super Admin', email: 'superadmin@sms.edu' },
+                      { code: 'SCHOOL_ADMIN', name: '🛡️ School Admin', email: 'admin@sms.edu' },
+                      { code: 'PRINCIPAL', name: '🎓 Principal', email: 'principal@sms.edu' },
+                      { code: 'VICE_PRINCIPAL', name: '⚖️ Vice Principal', email: 'viceprincipal@sms.edu' },
+                      { code: 'ACCOUNTANT', name: '💵 Accountant', email: 'accountant@sms.edu' },
+                      { code: 'TEACHER', name: '👩‍🏫 Teacher', email: 'teacher@sms.edu' },
+                      { code: 'STUDENT', name: '🎒 Student', email: 'student@sms.edu' },
+                    ].map(r => (
+                      <button
+                        key={r.code}
+                        type="button"
+                        onClick={() => handleQuickDemoLogin(r.code, r.email)}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
+                          currentRole === r.code 
+                            ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300' 
+                            : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-100'
+                        }`}
+                      >
+                        {r.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Footer Notice */}
+            <footer className="py-4 text-center text-xs text-slate-400 font-medium">
+              Pathaibhara School Management System © 2026 • Executive Edition
+            </footer>
+
+          </div>
+        );
+      }
+
+      // -------------------------------------------------------------
+      // 2. MAIN APPLICATION WORKSPACE (AFTER LOGGED IN)
+      // -------------------------------------------------------------
       return (
         <div className="flex min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
           
@@ -489,6 +713,15 @@
                     <p className="text-[10px] text-slate-400">{currentUser.email}</p>
                   </div>
                 </div>
+
+                {/* Sign Out Button */}
+                <button 
+                  onClick={handleLogout}
+                  className="ml-2 px-3 py-1.5 bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-300 hover:bg-rose-100 rounded-xl text-xs font-extrabold flex items-center gap-1 transition-colors"
+                  title="Sign Out to Login Screen"
+                >
+                  🔒 Sign Out
+                </button>
               </div>
             </header>
 
