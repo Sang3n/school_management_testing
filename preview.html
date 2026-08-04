@@ -76,23 +76,46 @@
     const INITIAL_STUDENTS = [
       { id: 's1', name: 'Ethan Hunt', email: 'ethan@sms.edu', roll: '1001', admission: 'ADM-10045', class: 'Class 10-A', house: 'Red House', status: 'ACTIVE', allergies: 'Peanuts', emergency: '+1 555-999-8888' },
       { id: 's2', name: 'Sophia Miller', email: 'sophia@sms.edu', roll: '1002', admission: 'ADM-10046', class: 'Class 10-A', house: 'Green House', status: 'ACTIVE', allergies: 'None', emergency: '+1 555-888-7777' },
-      { id: 's3', name: 'Lucas Davis', email: 'lucas@sms.edu', roll: '1003', admission: 'ADM-10047', class: 'Class 9-B', house: 'Blue House', status: 'ACTIVE', allergies: 'Penicillin', emergency: '+1 555-777-6666' },
+      { id: 's3', name: 'Lucas Davis', email: 'lucas@sms.edu', roll: '1003', admission: 'ADM-10047', class: 'Class 9-B', house: 'Blue House', status: 'BLOCKED', allergies: 'Penicillin', emergency: '+1 555-777-6666' },
       { id: 's4', name: 'Emma Watson', email: 'emma@sms.edu', roll: '1004', admission: 'ADM-10048', class: 'Class 8-A', house: 'Yellow House', status: 'ACTIVE', allergies: 'Pollen', emergency: '+1 555-666-5555' },
     ];
 
+    const INITIAL_TEACHERS = [
+      { id: 't1', name: 'Emily Watson', email: 'ewatson@sms.edu', employeeId: 'EMP-101', subject: 'Mathematics & Algebra', qualification: 'M.Sc. Mathematics', phone: '+977 9801234567', assignedClass: 'Class 10-A, Class 9-B', status: 'ACTIVE' },
+      { id: 't2', name: 'Dr. Alan Turing', email: 'turing@sms.edu', employeeId: 'EMP-102', subject: 'Computer Science & AI', qualification: 'Ph.D. Computer Science', phone: '+977 9802345678', assignedClass: 'Class 11-A, Class 12-A', status: 'ACTIVE' },
+      { id: 't3', name: 'Sarah Jenkins', email: 'sjenkins@sms.edu', employeeId: 'EMP-103', subject: 'English Literature', qualification: 'M.A. English', phone: '+977 9803456789', assignedClass: 'Class 8-A, Class 7-B', status: 'BLOCKED' },
+      { id: 't4', name: 'Richard Feynman', email: 'feynman@sms.edu', employeeId: 'EMP-104', subject: 'Physics & General Science', qualification: 'M.Sc. Physics', phone: '+977 9804567890', assignedClass: 'Class 10-B, Grade 9-A', status: 'ACTIVE' },
+    ];
+
     function App() {
-      const [currentRole, setCurrentRole] = useState('PRINCIPAL'); // Default to Principal Dashboard
+      const [currentRole, setCurrentRole] = useState('PRINCIPAL');
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
       const [showRoleDropdown, setShowRoleDropdown] = useState(false);
-      const [students, setStudents] = useState(INITIAL_STUDENTS);
-      const [search, setSearch] = useState('');
+
+      // Add Button Dropdown State
+      const [showAddDropdown, setShowAddDropdown] = useState(false);
+
+      // Modals State
       const [showAdmissionModal, setShowAdmissionModal] = useState(false);
+      const [showAddTeacherModal, setShowAddTeacherModal] = useState(false);
+      const [showAddOtherModal, setShowAddOtherModal] = useState(false);
+
+      const [students, setStudents] = useState(INITIAL_STUDENTS);
+      const [teachers, setTeachers] = useState(INITIAL_TEACHERS);
+      const [search, setSearch] = useState('');
+      const [teacherSearch, setTeacherSearch] = useState('');
       const [viewStudent, setViewStudent] = useState(null);
       const [notification, setNotification] = useState(null);
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
       const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: true, Teachers: true, Academics: true, Examinations: true, Communication: true });
+
+      // Teacher Form State
+      const [teacherForm, setTeacherForm] = useState({ firstName: '', lastName: '', email: '', subject: 'Mathematics', qualification: 'M.Sc. Physics / B.Ed', phone: '+977 9801234567' });
+
+      // Other Role Form State
+      const [otherForm, setOtherForm] = useState({ role: 'LIBRARIAN', firstName: '', lastName: '', email: '', phone: '+977 9801234567' });
 
       // Admission Form Multi-Step State (11 Sections)
       const [admissionStep, setAdmissionStep] = useState(1);
@@ -118,7 +141,44 @@
       const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.PRINCIPAL;
 
       const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'].includes(currentRole);
-      const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
+      
+      // STRICT RBAC: Super Admin, School Admin, Principal, Vice Principal, AND ACCOUNTANT can admit students
+      const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
+
+      // STRICT RBAC RULE ASKED BY USER:
+      // ONLY Super Admin and School Admin can DELETE data
+      const CAN_DELETE_DATA = ['SUPER_ADMIN', 'SCHOOL_ADMIN'].includes(currentRole);
+
+      // Principal, Vice Principal, and Accountant can ONLY BLOCK data (not delete)
+      const CAN_BLOCK_DATA = ['PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
+
+      const handleDeleteStudent = (studentToDelete) => {
+        if (window.confirm(`⚠️ [ADMIN ACTION] Are you sure you want to permanently delete student record: "${studentToDelete.name}" (${studentToDelete.admission})?`)) {
+          setStudents(students.filter(s => s.id !== studentToDelete.id));
+          notify(`🗑️ Student record "${studentToDelete.name}" permanently deleted by ${currentRole.replace('_', ' ')}!`);
+        }
+      };
+
+      const handleToggleBlockStudent = (studentToToggle) => {
+        const isCurrentlyBlocked = studentToToggle.status === 'BLOCKED';
+        const newStatus = isCurrentlyBlocked ? 'ACTIVE' : 'BLOCKED';
+        setStudents(students.map(s => s.id === studentToToggle.id ? { ...s, status: newStatus } : s));
+        notify(`${newStatus === 'BLOCKED' ? '🚫' : '✅'} Student "${studentToToggle.name}" is now ${newStatus} by ${currentRole.replace('_', ' ')}!`);
+      };
+
+      const handleDeleteTeacher = (teacherToDelete) => {
+        if (window.confirm(`⚠️ [ADMIN ACTION] Are you sure you want to permanently delete teacher: "${teacherToDelete.name}"?`)) {
+          setTeachers(teachers.filter(t => t.id !== teacherToDelete.id));
+          notify(`🗑️ Teacher record "${teacherToDelete.name}" permanently deleted by ${currentRole.replace('_', ' ')}!`);
+        }
+      };
+
+      const handleToggleBlockTeacher = (teacherToToggle) => {
+        const isCurrentlyBlocked = teacherToToggle.status === 'BLOCKED';
+        const newStatus = isCurrentlyBlocked ? 'ACTIVE' : 'BLOCKED';
+        setTeachers(teachers.map(t => t.id === teacherToToggle.id ? { ...t, status: newStatus } : t));
+        notify(`${newStatus === 'BLOCKED' ? '🚫' : '✅'} Teacher "${teacherToToggle.name}" has been ${newStatus} by ${currentRole.replace('_', ' ')}!`);
+      };
 
       // SPECIFIC PRINCIPAL RECOMMENDED SIDEBAR
       const PRINCIPAL_SIDEBAR = [
@@ -217,12 +277,12 @@
 
       const notify = (msg) => {
         setNotification(msg);
-        setTimeout(() => setNotification(null), 3000);
+        setTimeout(() => setNotification(null), 3500);
       };
 
       const handleAddStudentSubmit = (e) => {
         e.preventDefault();
-        const fullName = `${studentForm.firstName} ${studentForm.middleName ? studentForm.middleName + ' ' : ''}${studentForm.lastName}`.trim() || 'New Student';
+        const fullName = `${studentForm.firstName} ${studentForm.middleName ? studentForm.middleName + ' ' : ''}${studentForm.lastName}`.trim() || 'New Enrolled Student';
         const newEntry = {
           id: 's-' + Date.now(),
           name: fullName,
@@ -238,7 +298,37 @@
         setStudents([newEntry, ...students]);
         setShowAdmissionModal(false);
         setAdmissionStep(1);
-        notify(`🎉 Student "${fullName}" Successfully Admitted by Principal!`);
+        setCurrentTab('students');
+        notify(`🎉 Student "${fullName}" Successfully Admitted & Fee Account Generated by ${currentRole.replace('_', ' ')}!`);
+      };
+
+      const handleAddTeacherSubmit = (e) => {
+        e.preventDefault();
+        const teacherName = `${teacherForm.firstName} ${teacherForm.lastName}`.trim() || 'New Faculty Teacher';
+        const newTeacherEntry = {
+          id: 't-' + Date.now(),
+          name: teacherName,
+          email: teacherForm.email || `${(teacherForm.firstName || 'teacher').toLowerCase()}@sms.edu`,
+          employeeId: 'EMP-' + Math.floor(100 + Math.random() * 900),
+          subject: teacherForm.subject,
+          qualification: teacherForm.qualification || 'M.Sc. Mathematics / B.Ed',
+          phone: teacherForm.phone,
+          assignedClass: 'Grade 10-A, Grade 9-B',
+          status: 'ACTIVE',
+        };
+        setTeachers([newTeacherEntry, ...teachers]);
+        setShowAddTeacherModal(false);
+        setTeacherForm({ firstName: '', lastName: '', email: '', subject: 'Mathematics', qualification: 'M.Sc. Physics / B.Ed', phone: '+977 9801234567' });
+        setCurrentTab('faculty');
+        notify(`👨‍🏫 New Teacher "${teacherName}" (${teacherForm.subject}) added to Faculty Directory!`);
+      };
+
+      const handleAddOtherSubmit = (e) => {
+        e.preventDefault();
+        const otherName = `${otherForm.firstName} ${otherForm.lastName}`.trim() || 'New Staff Member';
+        setShowAddOtherModal(false);
+        setOtherForm({ role: 'LIBRARIAN', firstName: '', lastName: '', email: '', phone: '+977 9801234567' });
+        notify(`👤 New Staff Member "${otherName}" [${otherForm.role}] successfully registered!`);
       };
 
       return (
@@ -324,7 +414,7 @@
             </div>
 
             <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 Principal Edition</p>}
+              {!sidebarCollapsed && <p className="text-[11px] text-slate-400 font-semibold">v2.5 Executive Edition</p>}
               <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
                 {sidebarCollapsed ? '➔' : '◀'}
               </button>
@@ -339,7 +429,7 @@
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950 flex items-center justify-center font-bold text-purple-700 text-sm">🎓</div>
                   <h1 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight capitalize">
-                    Principal Executive Operations Dashboard
+                    {currentRole.replace('_', ' ')} Executive Operations Portal
                   </h1>
                 </div>
 
@@ -397,19 +487,19 @@
               {currentTab === 'dashboard' && (
                 <div className="space-y-8">
                   
-                  {/* 10 PRINCIPAL OVERVIEW CARDS */}
+                  {/* OVERVIEW CARDS */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Principal Executive Overview Cards</h2>
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">{currentRole.replace('_', ' ')} Overview Cards</h2>
                       <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-extrabold">
-                        🎓 Highest Academic Authority Scope
+                        {CAN_DELETE_DATA ? '👑 Super Admin / Admin Full Data Erasure Access' : '🛡️ Executive Block / Suspend Access Active'}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
                       {[
-                        { title: 'Total Students', val: '1,284', icon: '👨‍🎓' },
-                        { title: 'Total Teachers', val: '86', icon: '👨‍🏫' },
+                        { title: 'Total Students', val: students.length, icon: '👨‍🎓' },
+                        { title: 'Total Teachers', val: teachers.length, icon: '👨‍🏫' },
                         { title: 'Total Classes', val: '12', icon: '🏫' },
                         { title: 'Attendance Today', val: '96.4%', icon: '📅' },
                         { title: 'Upcoming Exams', val: '3', icon: '📝' },
@@ -430,12 +520,16 @@
                     </div>
                   </div>
 
-                  {/* 8 PRINCIPAL QUICK ACTIONS BAR */}
+                  {/* QUICK ACTIONS BAR */}
                   <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
-                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Principal Executive Quick Actions</h3>
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">{currentRole.replace('_', ' ')} Executive Quick Actions</h3>
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">➕ Admit New Student</button>
-                      <button onClick={() => notify('Class Teacher Assigned!')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">👨‍🏫 Assign Class Teacher</button>
+                      {CAN_ADMIT_STUDENTS && (
+                        <button onClick={() => { setCurrentTab('students'); setShowAdmissionModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">
+                          ➕ Add Student
+                        </button>
+                      )}
+                      <button onClick={() => setShowAddTeacherModal(true)} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">👨‍🏫 Add Teacher</button>
                       <button onClick={() => notify('Approved Faculty Leave Request!')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">✅ Approve Leave Request</button>
                       <button onClick={() => notify('Exam Schedule Published!')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">📅 Create Exam Schedule</button>
                       <button onClick={() => notify('Q3 Marks & Results Published!')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">📝 Publish Results</button>
@@ -476,8 +570,6 @@
                     </div>
                   </div>
 
-
-
                 </div>
               )}
 
@@ -487,13 +579,71 @@
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                       <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Students & Admissions Directory</h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Principal Academic Enrollment & Student Records</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Academic Enrollment & Student Records ({currentRole.replace('_', ' ')})
+                        <span className="ml-2 font-bold text-purple-600">
+                          [{CAN_DELETE_DATA ? 'Super Admin / Admin: Delete Allowed' : 'Principal / VP / Accountant: Block Only'}]
+                        </span>
+                      </p>
                     </div>
 
+                    {/* MULTI-ROLE DRAG DOWN "+ Add" BUTTON */}
                     {CAN_ADMIT_STUDENTS && (
-                      <button onClick={() => setShowAdmissionModal(true)} className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2">
-                        <span>➕</span> + Admit New Student (Principal Form)
-                      </button>
+                      <div className="relative">
+                        <button 
+                          onClick={() => setShowAddDropdown(!showAddDropdown)} 
+                          className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2 transition-all active:scale-95"
+                        >
+                          <span className="text-sm">➕</span>
+                          <span>+ Add</span>
+                          <span className="text-[10px] ml-1">▼</span>
+                        </button>
+
+                        {/* Drag Down Dropdown Menu */}
+                        {showAddDropdown && (
+                          <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                            <div className="px-3.5 py-1.5 border-b border-slate-100 dark:border-slate-700 text-[10px] uppercase font-bold text-slate-400">
+                              Select Role to Add
+                            </div>
+                            
+                            {/* 1. STUDENT */}
+                            <button 
+                              onClick={() => { setShowAddDropdown(false); setShowAdmissionModal(true); }} 
+                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/60 hover:text-purple-600 flex items-center gap-2.5 transition-colors border-b border-slate-50 dark:border-slate-700/50"
+                            >
+                              <span className="text-base">🎓</span>
+                              <div>
+                                <p className="font-extrabold">Student</p>
+                                <p className="text-[10px] text-slate-400 font-normal">Admit student & setup fee ledger</p>
+                              </div>
+                            </button>
+
+                            {/* 2. TEACHER */}
+                            <button 
+                              onClick={() => { setShowAddDropdown(false); setShowAddTeacherModal(true); }} 
+                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 flex items-center gap-2.5 transition-colors border-b border-slate-50 dark:border-slate-700/50"
+                            >
+                              <span className="text-base">👨‍🏫</span>
+                              <div>
+                                <p className="font-extrabold">Teacher</p>
+                                <p className="text-[10px] text-slate-400 font-normal">Recruit faculty & assign subjects</p>
+                              </div>
+                            </button>
+
+                            {/* 3. OTHER */}
+                            <button 
+                              onClick={() => { setShowAddDropdown(false); setShowAddOtherModal(true); }} 
+                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-600 flex items-center gap-2.5 transition-colors"
+                            >
+                              <span className="text-base">👤</span>
+                              <div>
+                                <p className="font-extrabold">Other Roles</p>
+                                <p className="text-[10px] text-slate-400 font-normal">Staff, Librarian, Driver, Parent</p>
+                              </div>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -501,18 +651,171 @@
                     <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
                       <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b">
                         <tr>
-                          <th className="p-3.5">Student Name</th><th className="p-3.5">Admission / Roll</th><th className="p-3.5">Class / Section</th><th className="p-3.5">House</th><th className="p-3.5">Medical Alert</th><th className="p-3.5 text-right">Actions</th>
+                          <th className="p-3.5">Student Name</th>
+                          <th className="p-3.5">Admission / Roll</th>
+                          <th className="p-3.5">Class / Section</th>
+                          <th className="p-3.5">House & Status</th>
+                          <th className="p-3.5">Medical Alert</th>
+                          <th className="p-3.5 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                         {students.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).map(s => (
-                          <tr key={s.id}>
-                            <td className="p-3.5 font-bold text-slate-900 dark:text-white">{s.name}<br/><span className="text-[10px] text-slate-400">{s.email}</span></td>
+                          <tr key={s.id} className={s.status === 'BLOCKED' ? 'bg-amber-50/40 dark:bg-amber-950/20 opacity-80' : ''}>
+                            <td className="p-3.5 font-bold text-slate-900 dark:text-white">
+                              {s.name}<br/><span className="text-[10px] text-slate-400">{s.email}</span>
+                            </td>
                             <td className="p-3.5">{s.admission}<br/><span className="text-[10px] text-slate-400">Roll: {s.roll}</span></td>
                             <td className="p-3.5 font-semibold text-purple-600">{s.class}</td>
-                            <td className="p-3.5"><span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">{s.house}</span></td>
+                            <td className="p-3.5">
+                              <div className="flex items-center gap-2">
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">{s.house}</span>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${s.status === 'BLOCKED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 animate-pulse' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'}`}>
+                                  {s.status === 'BLOCKED' ? '🚫 BLOCKED' : '✅ ACTIVE'}
+                                </span>
+                              </div>
+                            </td>
                             <td className="p-3.5 text-rose-600 font-semibold">{s.allergies !== 'None' ? `⚠️ ${s.allergies}` : 'None'}</td>
-                            <td className="p-3.5 text-right"><button onClick={() => setViewStudent(s)} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-semibold">View Profile</button></td>
+                            <td className="p-3.5 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button onClick={() => setViewStudent(s)} className="px-3 py-1 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 rounded-lg text-xs font-semibold hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors">
+                                  View Profile
+                                </button>
+                                
+                                {/* ONLY Super Admin & School Admin can DELETE data */}
+                                {CAN_DELETE_DATA && (
+                                  <button 
+                                    onClick={() => handleDeleteStudent(s)} 
+                                    className="px-3 py-1 bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-300 rounded-lg text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900 transition-colors flex items-center gap-1"
+                                    title="Permanently Delete Student Record (Admin Permission)"
+                                  >
+                                    🗑️ Delete
+                                  </button>
+                                )}
+
+                                {/* Principal, Vice Principal, and Accountant can ONLY BLOCK data */}
+                                {CAN_BLOCK_DATA && (
+                                  <button 
+                                    onClick={() => handleToggleBlockStudent(s)} 
+                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+                                      s.status === 'BLOCKED' 
+                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 hover:bg-emerald-100' 
+                                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 hover:bg-amber-100'
+                                    }`}
+                                    title={s.status === 'BLOCKED' ? "Unblock Student Account" : "Block / Suspend Student Account"}
+                                  >
+                                    {s.status === 'BLOCKED' ? '✅ Unblock' : '🚫 Block'}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* TEACHERS / FACULTY DIRECTORY TAB */}
+              {(currentTab === 'faculty' || currentTab === 'teacher_attendance' || currentTab === 'teacher_timetable') && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>👨‍🏫</span> Faculty & Teachers Directory
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Manage Teacher Profiles, Subject Assignments & Faculty Records ({currentRole.replace('_', ' ')})
+                        <span className="ml-2 font-bold text-indigo-600">
+                          [{CAN_DELETE_DATA ? 'Super Admin / Admin: Delete Allowed' : 'Principal / VP / Accountant: Block Only'}]
+                        </span>
+                      </p>
+                    </div>
+
+                    <button 
+                      onClick={() => setShowAddTeacherModal(true)} 
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-2xl shadow-lg flex items-center gap-2 transition-all"
+                    >
+                      <span>➕</span> + Add New Teacher
+                    </button>
+                  </div>
+
+                  {/* Filter & Search for Teachers */}
+                  <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="w-full md:w-80">
+                      <input 
+                        type="text"
+                        placeholder="Search teacher by name, subject, employee ID..."
+                        value={teacherSearch}
+                        onChange={(e) => setTeacherSearch(e.target.value)}
+                        className="w-full px-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none"
+                      />
+                    </div>
+                    <p className="text-xs font-bold text-slate-500">Showing <span className="text-indigo-600">{teachers.length}</span> Active Faculty Teachers</p>
+                  </div>
+
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
+                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                      <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b">
+                        <tr>
+                          <th className="p-3.5">Teacher Name</th>
+                          <th className="p-3.5">Employee ID</th>
+                          <th className="p-3.5">Primary Subject</th>
+                          <th className="p-3.5">Qualification</th>
+                          <th className="p-3.5">Assigned Classes</th>
+                          <th className="p-3.5">Status</th>
+                          <th className="p-3.5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                        {teachers.filter(t => t.name.toLowerCase().includes(teacherSearch.toLowerCase()) || t.subject.toLowerCase().includes(teacherSearch.toLowerCase())).map(t => (
+                          <tr key={t.id} className={t.status === 'BLOCKED' ? 'bg-amber-50/40 dark:bg-amber-950/20 opacity-80' : ''}>
+                            <td className="p-3.5 font-bold text-slate-900 dark:text-white">
+                              {t.name}<br/><span className="text-[10px] text-slate-400">{t.email}</span>
+                            </td>
+                            <td className="p-3.5 font-mono font-bold text-indigo-600">{t.employeeId}</td>
+                            <td className="p-3.5 font-semibold text-slate-800 dark:text-slate-200">{t.subject}</td>
+                            <td className="p-3.5 text-slate-500">{t.qualification}</td>
+                            <td className="p-3.5 font-semibold text-purple-600">{t.assignedClass}</td>
+                            <td className="p-3.5">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${t.status === 'BLOCKED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 animate-pulse' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'}`}>
+                                {t.status === 'BLOCKED' ? '🚫 BLOCKED' : '✅ ACTIVE'}
+                              </span>
+                            </td>
+                            <td className="p-3.5 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button onClick={() => notify(`Viewing profile of ${t.name}`)} className="px-3 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition-colors">
+                                  View Profile
+                                </button>
+                                
+                                {/* ONLY Super Admin & School Admin can DELETE data */}
+                                {CAN_DELETE_DATA && (
+                                  <button 
+                                    onClick={() => handleDeleteTeacher(t)} 
+                                    className="px-3 py-1 bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-300 rounded-lg text-xs font-bold hover:bg-rose-100 transition-colors"
+                                    title="Permanently Delete Teacher Record (Admin Permission)"
+                                  >
+                                    🗑️ Delete
+                                  </button>
+                                )}
+
+                                {/* Principal, Vice Principal, and Accountant can ONLY BLOCK data */}
+                                {CAN_BLOCK_DATA && (
+                                  <button 
+                                    onClick={() => handleToggleBlockTeacher(t)} 
+                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+                                      t.status === 'BLOCKED' 
+                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 hover:bg-emerald-100' 
+                                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 hover:bg-amber-100'
+                                    }`}
+                                    title={t.status === 'BLOCKED' ? "Unblock Teacher Account" : "Block / Suspend Teacher Account"}
+                                  >
+                                    {t.status === 'BLOCKED' ? '✅ Unblock' : '🚫 Block'}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -525,33 +828,455 @@
             {/* FOOTER STATISTICS */}
             <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-8 py-3.5 flex flex-wrap items-center justify-between text-xs text-slate-500 font-semibold">
               <div className="flex flex-wrap items-center gap-6">
-                <span>👨‍🎓 Total Students: <strong className="text-slate-900 dark:text-white">1,284</strong></span>
-                <span>👨‍🏫 Teachers: <strong className="text-slate-900 dark:text-white">86</strong></span>
+                <span>👨‍🎓 Total Students: <strong className="text-slate-900 dark:text-white">{students.length}</strong></span>
+                <span>👨‍🏫 Teachers: <strong className="text-slate-900 dark:text-white">{teachers.length}</strong></span>
                 <span>✅ Attendance: <strong className="text-emerald-600">96.4%</strong></span>
-                <span>💰 Fee Summary: <strong className="text-purple-600">$64,000 (View Only)</strong></span>
+                <span>💰 Fee Summary: <strong className="text-purple-600">$64,000</strong></span>
               </div>
               <p className="text-[11px] text-slate-400">Pathaibhara SMS © 2026</p>
             </footer>
           </div>
 
-          {/* 11-SECTION ADMISSION MODAL */}
+          {/* COMPLETE 11-STEP INTERACTIVE ADMISSION MODAL */}
           {showAdmissionModal && CAN_ADMIT_STUDENTS && (
             <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+                
+                {/* Modal Header */}
                 <div className="p-5 border-b flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-lg">➕</div>
-                    <div><h3 className="text-base font-extrabold text-slate-900 dark:text-white">Principal Student Admission Wizard</h3><p className="text-xs text-slate-400">11-Category Registration Form</p></div>
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                        {currentRole === 'ACCOUNTANT' ? 'Accountant Student Admission & Fee Setup Wizard' : 'Student Admission Wizard'}
+                      </h3>
+                      <p className="text-xs text-slate-400">11-Category Complete Registration Form</p>
+                    </div>
                   </div>
-                  <button onClick={() => setShowAdmissionModal(false)} className="p-2 rounded-xl text-slate-400">✕</button>
+                  <button onClick={() => setShowAdmissionModal(false)} className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold">✕</button>
                 </div>
-                <form onSubmit={handleAddStudentSubmit} className="p-6 flex-1 overflow-y-auto space-y-4 text-xs">
-                  <p className="font-bold text-purple-600">Principal Authorized Admission Active</p>
-                  <button type="submit" className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold">✓ Submit Enrollment</button>
+
+                {/* 11-Step Navigation Bar */}
+                <div className="flex overflow-x-auto bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 px-4 py-2 gap-1.5 scrollbar-none">
+                  {ADMISSION_WIZARD_STEPS.map((s) => (
+                    <button
+                      key={s.num}
+                      type="button"
+                      onClick={() => setAdmissionStep(s.num)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                        admissionStep === s.num
+                          ? 'bg-purple-600 text-white shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <span>{s.icon}</span>
+                      <span>{s.num}. {s.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Form Input Body */}
+                <form onSubmit={handleAddStudentSubmit} className="p-6 flex-1 overflow-y-auto space-y-6 text-xs">
+                  
+                  {/* STEP 1: Personal Info */}
+                  {admissionStep === 1 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">1. Personal Information</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">First Name *</label>
+                          <input type="text" required value={studentForm.firstName} onChange={(e) => setStudentForm({ ...studentForm, firstName: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="e.g. Aarav" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Middle Name (Optional)</label>
+                          <input type="text" value={studentForm.middleName} onChange={(e) => setStudentForm({ ...studentForm, middleName: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="e.g. Kumar" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Last Name *</label>
+                          <input type="text" required value={studentForm.lastName} onChange={(e) => setStudentForm({ ...studentForm, lastName: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="e.g. Shrestha" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Date of Birth</label>
+                          <input type="date" value={studentForm.dob} onChange={(e) => setStudentForm({ ...studentForm, dob: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Gender</label>
+                          <select value={studentForm.gender} onChange={(e) => setStudentForm({ ...studentForm, gender: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Blood Group</label>
+                          <select value={studentForm.bloodGroup} onChange={(e) => setStudentForm({ ...studentForm, bloodGroup: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                            <option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+                            <option value="O-">O-</option><option value="A-">A-</option><option value="B-">B-</option><option value="AB-">AB-</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Religion</label>
+                          <input type="text" value={studentForm.religion} onChange={(e) => setStudentForm({ ...studentForm, religion: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 2: Academic Info */}
+                  {admissionStep === 2 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">2. Academic Assignment</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Class / Grade *</label>
+                          <select value={studentForm.classCode} onChange={(e) => setStudentForm({ ...studentForm, classCode: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold">
+                            <option value="Nursery">Nursery</option>
+                            <option value="LKG">LKG</option>
+                            <option value="UKG">UKG</option>
+                            <option value="Class 1">Class 1</option>
+                            <option value="Class 2">Class 2</option>
+                            <option value="Class 3">Class 3</option>
+                            <option value="Class 4">Class 4</option>
+                            <option value="Class 5">Class 5</option>
+                            <option value="Class 6">Class 6</option>
+                            <option value="Class 7">Class 7</option>
+                            <option value="Class 8">Class 8</option>
+                            <option value="Class 9">Class 9</option>
+                            <option value="Class 10">Class 10</option>
+                            <option value="Class 11">Class 11 (+2)</option>
+                            <option value="Class 12">Class 12 (+2)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Section</label>
+                          <select value={studentForm.section} onChange={(e) => setStudentForm({ ...studentForm, section: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                            <option value="A">Section A</option><option value="B">Section B</option><option value="C">Section C</option><option value="D">Section D</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">House Allocation</label>
+                          <select value={studentForm.house} onChange={(e) => setStudentForm({ ...studentForm, house: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold">
+                            <option value="Red">Red House</option>
+                            <option value="Green">Green House</option>
+                            <option value="Blue">Blue House</option>
+                            <option value="Yellow">Yellow House</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Shift</label>
+                          <select value={studentForm.shift} onChange={(e) => setStudentForm({ ...studentForm, shift: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                            <option value="Day">Day Shift</option><option value="Morning">Morning Shift</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 3: Contact Details */}
+                  {admissionStep === 3 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">3. Contact Details</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Mobile Phone *</label>
+                          <input type="text" required value={studentForm.mobileNumber} onChange={(e) => setStudentForm({ ...studentForm, mobileNumber: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Email Address</label>
+                          <input type="email" value={studentForm.email} onChange={(e) => setStudentForm({ ...studentForm, email: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="student@sms.edu" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="font-bold text-slate-700 dark:text-slate-300">Current Residential Address</label>
+                        <input type="text" value={studentForm.currentAddress} onChange={(e) => setStudentForm({ ...studentForm, currentAddress: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 4: Parent / Guardian Info */}
+                  {admissionStep === 4 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">4. Parent / Guardian Information</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Father Name *</label>
+                          <input type="text" required value={studentForm.fatherName} onChange={(e) => setStudentForm({ ...studentForm, fatherName: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="Father's full name" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Father Mobile</label>
+                          <input type="text" value={studentForm.fatherMobile} onChange={(e) => setStudentForm({ ...studentForm, fatherMobile: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Mother Name *</label>
+                          <input type="text" required value={studentForm.motherName} onChange={(e) => setStudentForm({ ...studentForm, motherName: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="Mother's full name" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Mother Mobile</label>
+                          <input type="text" value={studentForm.motherMobile} onChange={(e) => setStudentForm({ ...studentForm, motherMobile: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 5: Emergency Contact */}
+                  {admissionStep === 5 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">5. Emergency Contact</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Emergency Phone</label>
+                          <input type="text" value={studentForm.emergencyPhone} onChange={(e) => setStudentForm({ ...studentForm, emergencyPhone: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Relation</label>
+                          <input type="text" value={studentForm.emergencyRelation} onChange={(e) => setStudentForm({ ...studentForm, emergencyRelation: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 6: Medical Info */}
+                  {admissionStep === 6 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">6. Medical Information</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Allergies</label>
+                          <input type="text" value={studentForm.allergies} onChange={(e) => setStudentForm({ ...studentForm, allergies: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="e.g. Peanuts, Penicillin, None" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Medical Notes</label>
+                          <input type="text" value={studentForm.emergencyMedicalNotes} onChange={(e) => setStudentForm({ ...studentForm, emergencyMedicalNotes: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 7: Transport Info */}
+                  {admissionStep === 7 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">7. Transport Facility</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Uses Transport?</label>
+                          <select value={studentForm.usesTransport} onChange={(e) => setStudentForm({ ...studentForm, usesTransport: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                            <option value="Yes">Yes</option><option value="No">No</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Route & Pickup</label>
+                          <input type="text" value={studentForm.route} onChange={(e) => setStudentForm({ ...studentForm, route: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 8: Hostel Info */}
+                  {admissionStep === 8 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">8. Hostel Allocation</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Hostel Required?</label>
+                          <select value={studentForm.hostelRequired} onChange={(e) => setStudentForm({ ...studentForm, hostelRequired: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                            <option value="No">No</option><option value="Yes">Yes</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Room Number</label>
+                          <input type="text" value={studentForm.roomNumber} onChange={(e) => setStudentForm({ ...studentForm, roomNumber: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 9: Fee & Payment */}
+                  {admissionStep === 9 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">9. Fee & Payment Ledger Setup</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Admission Fee</label>
+                          <input type="text" value={studentForm.admissionFee} onChange={(e) => setStudentForm({ ...studentForm, admissionFee: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Monthly Plan</label>
+                          <input type="text" value={studentForm.monthlyFeePlan} onChange={(e) => setStudentForm({ ...studentForm, monthlyFeePlan: e.target.value })} className="mt-1 w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                        </div>
+                        <div>
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Payment Status</label>
+                          <select value={studentForm.feeStatus} onChange={(e) => setStudentForm({ ...studentForm, feeStatus: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold">
+                            <option value="PAID">PAID</option><option value="UNPAID">UNPAID</option><option value="PARTIAL">PARTIAL</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 10: Documents */}
+                  {admissionStep === 10 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">10. Document Upload Checklist</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {['Photo Uploaded', 'Birth Certificate', 'Transfer Certificate', 'Mark Sheet', 'Character Certificate', 'Parent Citizenship'].map((doc, idx) => (
+                          <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">{doc}</span>
+                            <span className="text-emerald-500 font-bold">✓ Attached</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 11: Portal Account */}
+                  {admissionStep === 11 && (
+                    <div className="space-y-4">
+                      <h4 className="font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">11. Student Portal Credentials</h4>
+                      <div className="p-4 bg-purple-50 dark:bg-purple-950/60 rounded-2xl border border-purple-200 space-y-2">
+                        <p className="font-bold text-purple-900 dark:text-purple-200">Generated Temp Password: <code className="bg-purple-200 dark:bg-purple-800 px-2 py-0.5 rounded text-purple-950 dark:text-white font-mono">{studentForm.tempPassword}</code></p>
+                        <p className="text-purple-700 dark:text-purple-300">✓ SMS Credentials Notice will be dispatched automatically upon submission.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bottom Navigation & Submit Actions */}
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <div>
+                      {admissionStep > 1 && (
+                        <button type="button" onClick={() => setAdmissionStep(admissionStep - 1)} className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">
+                          ◀ Previous
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {admissionStep < 11 ? (
+                        <button type="button" onClick={() => setAdmissionStep(admissionStep + 1)} className="px-5 py-2.5 rounded-xl bg-purple-600 text-white font-bold shadow-md">
+                          Next Step ({admissionStep + 1}/11) ▶
+                        </button>
+                      ) : (
+                        <button type="submit" className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold shadow-lg hover:bg-emerald-700">
+                          ✓ Submit Enrollment & Generate Invoices
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                 </form>
               </div>
             </div>
           )}
+
+          {/* ADD TEACHER MODAL */}
+          {showAddTeacherModal && (
+            <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl">👨‍🏫</span>
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Register New Faculty Teacher</h3>
+                  </div>
+                  <button onClick={() => setShowAddTeacherModal(false)} className="p-1 rounded-lg text-slate-400 font-bold">✕</button>
+                </div>
+
+                <form onSubmit={handleAddTeacherSubmit} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="font-bold text-slate-700 dark:text-slate-300">First Name *</label>
+                      <input type="text" required value={teacherForm.firstName} onChange={(e) => setTeacherForm({ ...teacherForm, firstName: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="e.g. Ramesh" />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-700 dark:text-slate-300">Last Name *</label>
+                      <input type="text" required value={teacherForm.lastName} onChange={(e) => setTeacherForm({ ...teacherForm, lastName: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="e.g. Adhikari" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300">Primary Subject / Specialty</label>
+                    <select value={teacherForm.subject} onChange={(e) => setTeacherForm({ ...teacherForm, subject: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold">
+                      <option value="Mathematics">Mathematics</option>
+                      <option value="Physics">Physics</option>
+                      <option value="Chemistry">Chemistry</option>
+                      <option value="Biology">Biology</option>
+                      <option value="English Literature">English Literature</option>
+                      <option value="Computer Science">Computer Science</option>
+                      <option value="Social Studies">Social Studies</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300">Qualification</label>
+                    <input type="text" value={teacherForm.qualification} onChange={(e) => setTeacherForm({ ...teacherForm, qualification: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="e.g. M.Sc. Physics / B.Ed" />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300">Mobile Phone</label>
+                    <input type="text" value={teacherForm.phone} onChange={(e) => setTeacherForm({ ...teacherForm, phone: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                  </div>
+
+                  <div className="pt-3 flex justify-end gap-2">
+                    <button type="button" onClick={() => setShowAddTeacherModal(false)} className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">Cancel</button>
+                    <button type="submit" className="px-5 py-2 rounded-xl bg-indigo-600 text-white font-extrabold shadow-md">✓ Register Teacher</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ADD OTHER ROLE MODAL */}
+          {showAddOtherModal && (
+            <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl">👤</span>
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Register Staff / Other Roles</h3>
+                  </div>
+                  <button onClick={() => setShowAddOtherModal(false)} className="p-1 rounded-lg text-slate-400 font-bold">✕</button>
+                </div>
+
+                <form onSubmit={handleAddOtherSubmit} className="space-y-4 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300">Role Designation</label>
+                    <select value={otherForm.role} onChange={(e) => setOtherForm({ ...otherForm, role: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold">
+                      <option value="LIBRARIAN">Librarian</option>
+                      <option value="RECEPTIONIST">Receptionist</option>
+                      <option value="ACCOUNTANT">Accountant</option>
+                      <option value="HOSTEL_WARDEN">Hostel Warden</option>
+                      <option value="TRANSPORT_DRIVER">Transport Driver</option>
+                      <option value="PARENT">Parent Account</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="font-bold text-slate-700 dark:text-slate-300">First Name *</label>
+                      <input type="text" required value={otherForm.firstName} onChange={(e) => setOtherForm({ ...otherForm, firstName: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="First name" />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-700 dark:text-slate-300">Last Name *</label>
+                      <input type="text" required value={otherForm.lastName} onChange={(e) => setOtherForm({ ...otherForm, lastName: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="Last name" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300">Mobile Contact</label>
+                    <input type="text" value={otherForm.phone} onChange={(e) => setOtherForm({ ...otherForm, phone: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
+                  </div>
+
+                  <div className="pt-3 flex justify-end gap-2">
+                    <button type="button" onClick={() => setShowAddOtherModal(false)} className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">Cancel</button>
+                    <button type="submit" className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-extrabold shadow-md">✓ Register User</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
         </div>
       );
     }

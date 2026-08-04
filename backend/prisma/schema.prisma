@@ -464,12 +464,13 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
-
-  motto        String @default("Excellence & Integrity")
+model SchoolSetting {
+  id           String  @id @default(uuid())
+  motto        String  @default("Excellence & Integrity")
   logo         String?
-  email        String @default("admin@oakridge.edu")
-  phone        String @default("+1 (555) 234-5678")
-  address      String @default("742 Evergreen Terrace, Springfield, VA")
-  currency     String @default("USD ($)")
-  currentYear  String @default("2025-2026")
+  email        String  @default("admin@oakridge.edu")
+  phone        String  @default("+1 (555) 234-5678")
+  address      String  @default("742 Evergreen Terrace, Springfield, VA")
+  currency     String  @default("USD ($)")
+  currentYear  String  @default("2025-2026")
 }
