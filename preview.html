@@ -88,7 +88,7 @@
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('STUDENT');
+      const [currentRole, setCurrentRole] = useState('VICE_PRINCIPAL');
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
@@ -144,9 +144,9 @@
 
       const chartRefPerformance = useRef(null);
 
-      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.STUDENT;
+      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.VICE_PRINCIPAL;
 
-      const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'].includes(currentRole);
+      const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL'].includes(currentRole);
       
       // STRICT RBAC: Super Admin, School Admin, Principal, Vice Principal, AND ACCOUNTANT can admit students
       const CAN_ADMIT_STUDENTS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole);
@@ -267,7 +267,7 @@
 
       // Initialize Performance Chart for Principal / Admin Dashboard
       useEffect(() => {
-        if (currentTab === 'dashboard' && (currentRole === 'PRINCIPAL' || currentRole === 'SCHOOL_ADMIN' || currentRole === 'SUPER_ADMIN') && window.Chart) {
+        if (currentTab === 'dashboard' && (currentRole === 'PRINCIPAL' || currentRole === 'SCHOOL_ADMIN' || currentRole === 'SUPER_ADMIN' || currentRole === 'VICE_PRINCIPAL') && window.Chart) {
           const ctxP = document.getElementById('principalPerformanceChart');
           if (ctxP) {
             if (chartRefPerformance.current) chartRefPerformance.current.destroy();
@@ -496,6 +496,163 @@
               {notification && (
                 <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950 border border-purple-200 text-purple-800 text-xs font-bold flex items-center gap-2">
                   <span>ℹ️</span> {notification}
+                </div>
+              )}
+
+              {/* DEDICATED VICE PRINCIPAL DASHBOARD (WHEN LOGGED IN AS VICE_PRINCIPAL) */}
+              {currentTab === 'dashboard' && currentRole === 'VICE_PRINCIPAL' && (
+                <div className="space-y-8 animate-in fade-in duration-300">
+                  
+                  {/* VICE PRINCIPAL EXECUTIVE HERO BANNER */}
+                  <div className="p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">
+                        <span>⚖️ Vice Principal Executive Portal</span>
+                        <span>•</span>
+                        <span>Academic & Discipline Control</span>
+                      </div>
+                      <h2 className="text-2xl font-black tracking-tight">Welcome, Vice Principal Elena Rostova! ⚖️</h2>
+                      <p className="text-xs text-blue-100 max-w-xl font-medium">
+                        Coordinating academic standards, student discipline, teacher attendance, class substitutions, exam invigilation, and student counseling.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-4 py-2.5 bg-white text-blue-900 font-extrabold text-xs rounded-2xl shadow-md hover:bg-slate-50 transition-colors">
+                        🎓 Admit Student
+                      </button>
+                      <button onClick={() => notify('🚨 Filed New Student Discipline Case')} className="px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs rounded-2xl shadow-md transition-colors">
+                        🚨 File Incident Report
+                      </button>
+                      <button onClick={() => notify('📋 Substitute Teacher Assigned for Period 1')} className="px-4 py-2.5 bg-blue-950/60 hover:bg-blue-950 text-white font-extrabold text-xs rounded-2xl border border-white/20 transition-colors">
+                        📋 Assign Substitutes
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 10 VICE PRINCIPAL OVERVIEW METRICS (CARDS) */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Vice Principal Executive Metrics</h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 text-[10px] font-extrabold">
+                        🛡️ Academic Oversight • Block Access Active
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+                      {[
+                        { title: 'Total Students', val: students.length, icon: '👨‍🎓', color: 'text-purple-600 dark:text-purple-400' },
+                        { title: 'Total Teachers', val: teachers.length, icon: '👨‍🏫', color: 'text-indigo-600 dark:text-indigo-400' },
+                        { title: 'Classes & Sections', val: '12 / 24', icon: '🏫', color: 'text-blue-600 dark:text-blue-400' },
+                        { title: 'Student Attendance', val: '96.4%', icon: '📅', color: 'text-emerald-600 dark:text-emerald-400' },
+                        { title: 'Teacher Attendance', val: '98.2%', icon: '👩‍🏫', color: 'text-teal-600 dark:text-teal-400' },
+                        { title: 'Discipline Cases', val: '2 Active', icon: '🚨', color: 'text-rose-600 dark:text-rose-400' },
+                        { title: 'Active Exams', val: '3 Mid-Terms', icon: '📝', color: 'text-amber-600 dark:text-amber-400' },
+                        { title: 'Substitute Assigned', val: '1 Period', icon: '📋', color: 'text-cyan-600 dark:text-cyan-400' },
+                        { title: 'Leave Requests', val: '2 Pending', icon: '🏖️', color: 'text-purple-600 dark:text-purple-400' },
+                        { title: 'Events Active', val: 'Sports Meet', icon: '🏆', color: 'text-pink-600 dark:text-pink-400' },
+                      ].map((c, i) => (
+                        <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
+                          <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                            <span className="truncate">{c.title}</span>
+                            <span>{c.icon}</span>
+                          </div>
+                          <h3 className={`text-base font-extrabold ${c.color}`}>{c.val}</h3>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* VICE PRINCIPAL SHORTCUT CONTROL CENTER */}
+                  <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Vice Principal Quick Tools & Actions</h3>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">🎓 Admit Student</button>
+                      <button onClick={() => notify('🚨 Filed Discipline Incident Report')} className="px-3.5 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-bold shadow-md hover:bg-rose-700">🚨 File Discipline Case</button>
+                      <button onClick={() => notify('📋 Assigned Substitute Teacher for Absent Faculty')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">📋 Assign Substitute</button>
+                      <button onClick={() => notify('👩‍🏫 Faculty Attendance Register Rendered')} className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold border border-emerald-200">👩‍🏫 Teacher Attendance</button>
+                      <button onClick={() => notify('📝 Exam Invigilation Roster Generated')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold border border-blue-200">📝 Exam Invigilation</button>
+                      <button onClick={() => notify('🏆 Co-Curricular Event Schedule Opened')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-xs font-bold border border-amber-200">🏆 Event Coordinator</button>
+                    </div>
+                  </div>
+
+                  {/* THREE SPECIALIZED VICE PRINCIPAL PANELS */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    {/* 1. STUDENT DISCIPLINE & COUNSELING CASES (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>🚨</span> Active Discipline & Counseling
+                        </h3>
+                        <span className="text-xs text-rose-600 font-bold">2 Cases Active</span>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-2xl border border-rose-200 space-y-2">
+                          <div className="flex justify-between font-bold text-rose-900 dark:text-rose-200">
+                            <span>Lucas Davis (Grade 11-B)</span>
+                            <span className="text-[10px] bg-rose-200 dark:bg-rose-800 px-1.5 py-0.5 rounded">High Severity</span>
+                          </div>
+                          <p className="text-rose-700 dark:text-rose-300 text-[11px]">Unexcused Absence & Lab Disturbance</p>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => notify('Formal Warning Issued to Lucas Davis')} className="flex-1 py-1.5 bg-rose-600 text-white rounded-lg font-bold text-xs hover:bg-rose-700">
+                              Issue Warning
+                            </button>
+                            <button onClick={() => handleToggleBlockStudent(students[2])} className="px-3 py-1.5 bg-amber-600 text-white rounded-lg font-bold text-xs">
+                              🚫 Block
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. TEACHER LEAVE & SUBSTITUTE ASSIGNMENTS (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>📋</span> Teacher Substitution & Roster
+                        </h3>
+                        <span className="text-xs text-indigo-600 font-bold">1 Substitute Assigned</span>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200 space-y-2">
+                          <div className="flex justify-between font-bold text-indigo-900 dark:text-indigo-200">
+                            <span>Emily Watson (Medical Leave)</span>
+                            <span className="text-[10px] bg-indigo-200 dark:bg-indigo-800 px-1.5 py-0.5 rounded">Grade 10-A Math</span>
+                          </div>
+                          <p className="text-indigo-700 dark:text-indigo-300 text-[11px]">Assigned Substitute: Dr. Alan Turing (Period 1)</p>
+                          <button onClick={() => notify('Updated Substitute Roster')} className="w-full py-1.5 bg-indigo-600 text-white rounded-lg font-bold text-xs hover:bg-indigo-700">
+                            Re-assign Substitute
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. EXAM INVIGILATION & CO-CURRICULAR EVENTS (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>📝</span> Invigilation & Event Coordinator
+                        </h3>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">On Track</span>
+                      </div>
+                      <div className="space-y-2.5 text-xs">
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Q3 Mid-Term Exam Roster:</span>
+                          <span className="font-extrabold text-emerald-600">✓ Finalized</span>
+                        </div>
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Annual Sports Meet 2026:</span>
+                          <span className="font-extrabold text-purple-600">Aug 15 (Prep 80%)</span>
+                        </div>
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Science Lab Safety Audit:</span>
+                          <span className="font-extrabold text-blue-600">✓ Verified</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
                 </div>
               )}
 
