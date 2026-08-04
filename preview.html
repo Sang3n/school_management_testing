@@ -88,7 +88,7 @@
     ];
 
     function App() {
-      const [currentRole, setCurrentRole] = useState('SUPER_ADMIN');
+      const [currentRole, setCurrentRole] = useState('ACCOUNTANT');
       const [currentTab, setCurrentTab] = useState('dashboard');
       const [academicYear, setAcademicYear] = useState('2025-2026');
       const [isDark, setIsDark] = useState(false);
@@ -144,7 +144,7 @@
 
       const chartRefPerformance = useRef(null);
 
-      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.SUPER_ADMIN;
+      const currentUser = ROLE_USER_PROFILES[currentRole] || ROLE_USER_PROFILES.ACCOUNTANT;
 
       const IS_PRINCIPAL_EXECUTIVE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'].includes(currentRole);
       
@@ -496,6 +496,166 @@
               {notification && (
                 <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950 border border-purple-200 text-purple-800 text-xs font-bold flex items-center gap-2">
                   <span>ℹ️</span> {notification}
+                </div>
+              )}
+
+              {/* DEDICATED ACCOUNTANT FINANCIAL DASHBOARD */}
+              {currentTab === 'dashboard' && currentRole === 'ACCOUNTANT' && (
+                <div className="space-y-8 animate-in fade-in duration-300">
+                  
+                  {/* ACCOUNTANT HERO BANNER */}
+                  <div className="p-6 bg-gradient-to-r from-emerald-700 via-teal-700 to-indigo-900 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">
+                        <span>💵 School Financial & Accountant Portal</span>
+                        <span>•</span>
+                        <span>Ledger & Fee Management</span>
+                      </div>
+                      <h2 className="text-2xl font-black tracking-tight">Welcome, {currentUser.name}! 💵</h2>
+                      <p className="text-xs text-emerald-100 max-w-xl font-medium">
+                        Fee Collection, Student Billing, Monthly Invoicing, Defaulter Tracking, Payroll Disbursal, and Financial Audit Statements.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button onClick={() => notify('➕ Fee Collection Logger Opened')} className="px-4 py-2.5 bg-white text-emerald-800 font-extrabold text-xs rounded-2xl shadow-md hover:bg-slate-50 transition-colors">
+                        ➕ Collect Student Fee
+                      </button>
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-4 py-2.5 bg-emerald-950/60 hover:bg-emerald-950 text-white font-extrabold text-xs rounded-2xl border border-white/20 transition-colors">
+                        🎓 Admit Student & Setup Fee
+                      </button>
+                      <button onClick={() => notify('🧾 Bulk Invoice Generator Started')} className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-2xl shadow-md transition-colors">
+                        🧾 Issue Invoices
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 10 ACCOUNTANT FINANCIAL OVERVIEW CARDS */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Institutional Financial Metrics</h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold">
+                        🛡️ Accountant Operations • Block Access Active
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+                      {[
+                        { title: 'Fee Collected', val: '$64,000', icon: '💰', color: 'text-emerald-600 dark:text-emerald-400' },
+                        { title: 'Outstanding Dues', val: '$8,500', icon: '⏳', color: 'text-rose-600 dark:text-rose-400' },
+                        { title: 'Invoices Issued', val: '342 Slips', icon: '🧾', color: 'text-blue-600 dark:text-blue-400' },
+                        { title: 'Enrolled Students', val: students.length, icon: '👨‍🎓', color: 'text-purple-600 dark:text-purple-400' },
+                        { title: 'Faculty Payroll', val: '$18,500/mo', icon: '👨‍🏫', color: 'text-indigo-600 dark:text-indigo-400' },
+                        { title: 'Scholarships', val: '$4,200', icon: '💳', color: 'text-cyan-600 dark:text-cyan-400' },
+                        { title: 'Bank Balance', val: '$112,400', icon: '🏦', color: 'text-teal-600 dark:text-teal-400' },
+                        { title: 'School Expenses', val: '$12,300', icon: '📉', color: 'text-amber-600 dark:text-amber-400' },
+                        { title: 'Dues Defaulters', val: '5 Students', icon: '🚨', color: 'text-rose-600 dark:text-rose-400' },
+                        { title: 'Audit Report Status', val: 'Q2 Verified', icon: '📄', color: 'text-violet-600 dark:text-violet-400' },
+                      ].map((c, i) => (
+                        <div key={i} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-1">
+                          <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                            <span className="truncate">{c.title}</span>
+                            <span>{c.icon}</span>
+                          </div>
+                          <h3 className={`text-base font-extrabold ${c.color}`}>{c.val}</h3>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ACCOUNTANT SHORTCUT CONTROL CENTER */}
+                  <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Accountant Financial Tools & Shortcuts</h3>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button onClick={() => notify('➕ Collect Student Fee')} className="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md hover:bg-emerald-700">➕ Collect Student Fee</button>
+                      <button onClick={() => setShowAdmissionModal(true)} className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md hover:bg-purple-700">🎓 Admit Student & Fee</button>
+                      <button onClick={() => notify('🧾 Generate Invoices')} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700">🧾 Issue Monthly Invoices</button>
+                      <button onClick={() => notify('📩 Sent Payment Reminders to 5 Defaulter Parents')} className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-xs font-bold border border-amber-200">📩 Send Dues Reminders</button>
+                      <button onClick={() => notify('👨‍🏫 Processed Faculty Payroll for Current Month')} className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold border border-blue-200">👨‍🏫 Process Payroll</button>
+                      <button onClick={() => notify('📉 Logged Maintenance Expense')} className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 text-xs font-bold border border-rose-200">📉 Log School Expense</button>
+                      <button onClick={() => notify('📄 Exported Complete Balance Sheet Audit')} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700">📄 Balance Sheet Audit</button>
+                    </div>
+                  </div>
+
+                  {/* THREE SPECIALIZED ACCOUNTANT PANELS */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    {/* 1. FEE COLLECTION & DEFAULTER TRACKER (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>💳</span> Student Fee Ledger Status
+                        </h3>
+                        <span className="text-xs text-rose-600 font-bold">5 Dues Overdue</span>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 flex justify-between items-center">
+                          <div>
+                            <p className="font-extrabold text-emerald-900 dark:text-emerald-200">Ethan Hunt (Grade 10-A)</p>
+                            <p className="text-emerald-700 dark:text-emerald-300 text-[11px]">$250 / Month • Receipt #8894</p>
+                          </div>
+                          <span className="px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold">PAID</span>
+                        </div>
+
+                        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-2xl border border-rose-200 flex justify-between items-center">
+                          <div>
+                            <p className="font-extrabold text-rose-900 dark:text-rose-200">Lucas Davis (Grade 9-B)</p>
+                            <p className="text-rose-700 dark:text-rose-300 text-[11px]">$500 Dues Pending (2 Months)</p>
+                          </div>
+                          <button onClick={() => notify('📩 Payment SMS Reminder Sent to Parent!')} className="px-2.5 py-1 bg-rose-600 text-white rounded-lg font-bold">Remind</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. RECENT EXPENSES & PAYROLL DISBURSAL (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>📉</span> School Expenses & Payroll
+                        </h3>
+                        <span className="text-xs text-indigo-600 font-bold">$18,500 Disbursed</span>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">👨‍🏫 Faculty Salary Disbursal (July)</span>
+                          <span className="font-extrabold text-emerald-600">$18,500 ✓</span>
+                        </div>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">🚌 Transport Fleet Fuel & Maint.</span>
+                          <span className="font-extrabold text-slate-900 dark:text-white">$1,200 ✓</span>
+                        </div>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">🔬 Science Lab Equipment</span>
+                          <span className="font-extrabold text-slate-900 dark:text-white">$850 ✓</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. CASH FLOW & AUDIT LEDGER SUMMARY (1 COL) */}
+                    <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>📄</span> Cash Flow & Balance Sheet
+                        </h3>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">Balanced</span>
+                      </div>
+                      <div className="space-y-2.5 text-xs">
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Gross Inflow (Term):</span>
+                          <span className="font-extrabold text-emerald-600">+$64,000</span>
+                        </div>
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Gross Outflow (Term):</span>
+                          <span className="font-extrabold text-rose-600">-$30,800</span>
+                        </div>
+                        <div className="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                          <span className="text-slate-500">Net Surplus:</span>
+                          <span className="font-extrabold text-purple-600">+$33,200</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
                 </div>
               )}
 
