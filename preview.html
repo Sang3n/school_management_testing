@@ -109,7 +109,7 @@
       const [viewStudent, setViewStudent] = useState(null);
       const [notification, setNotification] = useState(null);
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-      const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: true, Teachers: true, Academics: true, Examinations: true, Communication: true });
+      const [openSidebarCategory, setOpenSidebarCategory] = useState({ Students: false, Teachers: false, Academics: false, Examinations: false, Communication: false });
 
       // Leave Approval State for Principal
       const [pendingLeaves, setPendingLeaves] = useState([
@@ -382,13 +382,17 @@
                       <div key={idx} className="space-y-1">
                         <button
                           onClick={() => setOpenSidebarCategory({ ...openSidebarCategory, [item.group]: !isOpen })}
-                          className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${
+                            isOpen 
+                              ? 'text-purple-600 bg-purple-50/70 dark:bg-purple-950/40 dark:text-purple-300' 
+                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          }`}
                         >
                           <div className="flex items-center gap-3">
                             <span>{item.icon}</span>
                             {!sidebarCollapsed && <span>{item.group}</span>}
                           </div>
-                          {!sidebarCollapsed && <span>{isOpen ? '▾' : '▸'}</span>}
+                          {!sidebarCollapsed && <span className="text-[10px] text-slate-400 font-extrabold">{isOpen ? '▼' : '▶'}</span>}
                         </button>
                         {isOpen && !sidebarCollapsed && (
                           <div className="pl-8 space-y-1 border-l-2 border-slate-200 dark:border-slate-800 ml-4">
