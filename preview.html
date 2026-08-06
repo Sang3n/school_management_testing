@@ -143,6 +143,26 @@
       const [calMonth, setCalMonth] = useState(new Date().getMonth());
       const [calYear, setCalYear] = useState(new Date().getFullYear());
 
+      // Calendar Notes/Events State
+      const [calendarNotes, setCalendarNotes] = useState([
+        { id: 'n1', date: '2026-08-06', text: 'Parent-Teacher Meeting', type: 'GLOBAL', role: null, color: 'bg-purple-500', icon: '👨‍👩‍👧' },
+        { id: 'n2', date: '2026-08-10', text: 'Independence Day (Holiday)', type: 'GLOBAL', role: null, color: 'bg-rose-500', icon: '🎌' },
+        { id: 'n3', date: '2026-08-15', text: 'Q3 Mid-Term Exams Start', type: 'GLOBAL', role: null, color: 'bg-amber-500', icon: '📝' },
+        { id: 'n4', date: '2026-08-18', text: 'Q3 Mid-Term Exams End', type: 'GLOBAL', role: null, color: 'bg-amber-500', icon: '📝' },
+        { id: 'n5', date: '2026-08-20', text: 'Sports Day', type: 'GLOBAL', role: null, color: 'bg-emerald-500', icon: '🏅' },
+        { id: 'n6', date: '2026-08-25', text: 'Science Exhibition', type: 'GLOBAL', role: null, color: 'bg-blue-500', icon: '🔬' },
+        { id: 'n7', date: '2026-08-28', text: 'Staff Training Day', type: 'GLOBAL', role: null, color: 'bg-indigo-500', icon: '👨‍🏫' },
+        { id: 'n8', date: '2026-09-01', text: 'New Academic Month Begins', type: 'GLOBAL', role: null, color: 'bg-cyan-500', icon: '📚' },
+        { id: 'n9', date: '2026-09-05', text: 'Teachers Day Celebration', type: 'GLOBAL', role: null, color: 'bg-pink-500', icon: '🎉' },
+        
+        // Seeded role-specific notes
+        { id: 'r1', date: '2026-08-07', text: 'Submit Math Assignment 4 (Grade 10)', type: 'ROLE', role: 'STUDENT', color: 'bg-blue-600', icon: '📓' },
+        { id: 'r2', date: '2026-08-12', text: 'Class 10 Grade Submissions Due', type: 'ROLE', role: 'TEACHER', color: 'bg-orange-500', icon: '✏️' },
+        { id: 'r3', date: '2026-08-14', text: 'Q3 Balance Ledger Audit due', type: 'ROLE', role: 'ACCOUNTANT', color: 'bg-emerald-600', icon: '💰' },
+        { id: 'r4', date: '2026-08-08', text: 'Academic Review Committee Meeting', type: 'ROLE', role: 'PRINCIPAL', color: 'bg-indigo-600', icon: '👔' },
+        { id: 'r5', date: '2026-08-09', text: 'Discipline Committee Agenda prep', type: 'ROLE', role: 'VICE_PRINCIPAL', color: 'bg-amber-600', icon: '⚖️' },
+      ]);
+
       // Leave Approval State for Principal / Admin
       const [pendingLeaves, setPendingLeaves] = useState([
         { id: 'l1', teacher: 'Emily Watson', role: 'Math Faculty', duration: '2 Days (Aug 05 - Aug 06)', reason: 'Medical Checkup & Fever', status: 'PENDING' },
@@ -2180,31 +2200,25 @@
                 const today = new Date();
                 const isToday = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
 
-                const SCHOOL_EVENTS = {
-                  '2026-08-06': { label: 'Parent-Teacher Meeting', color: 'bg-purple-500', type: '👨‍👩‍👧' },
-                  '2026-08-10': { label: 'Independence Day (Holiday)', color: 'bg-rose-500', type: '🎌' },
-                  '2026-08-15': { label: 'Q3 Mid-Term Exams Start', color: 'bg-amber-500', type: '📝' },
-                  '2026-08-18': { label: 'Q3 Mid-Term Exams End', color: 'bg-amber-500', type: '📝' },
-                  '2026-08-20': { label: 'Sports Day', color: 'bg-emerald-500', type: '🏅' },
-                  '2026-08-25': { label: 'Science Exhibition', color: 'bg-blue-500', type: '🔬' },
-                  '2026-08-28': { label: 'Staff Training Day', color: 'bg-indigo-500', type: '👨‍🏫' },
-                  '2026-09-01': { label: 'New Academic Month Begins', color: 'bg-cyan-500', type: '📚' },
-                  '2026-09-05': { label: 'Teachers Day Celebration', color: 'bg-pink-500', type: '🎉' },
-                  '2026-09-15': { label: 'Inter-House Quiz Competition', color: 'bg-violet-500', type: '🧠' },
-                  '2026-09-20': { label: 'Dashain Holiday Begins', color: 'bg-rose-500', type: '🎌' },
-                  '2026-07-01': { label: 'Summer Term Begins', color: 'bg-cyan-500', type: '📚' },
-                  '2026-07-15': { label: 'Annual Day Rehearsal', color: 'bg-pink-500', type: '🎭' },
-                  '2026-07-20': { label: 'Annual Day Celebration', color: 'bg-purple-500', type: '🎉' },
+                const getEventsForDay = (day) => {
+                  const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  return calendarNotes.filter(n => {
+                    if (n.date !== dateStr) return false;
+                    if (n.type === 'GLOBAL') return true;
+                    if (n.type === 'ROLE' && n.role === currentRole) return true;
+                    return false;
+                  });
                 };
 
-                const getEvent = (day) => {
-                  const key = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                  return SCHOOL_EVENTS[key] || null;
-                };
+                const monthGlobalNotes = calendarNotes
+                  .filter(n => n.type === 'GLOBAL')
+                  .filter(n => { const [y, m] = n.date.split('-'); return parseInt(y) === calYear && parseInt(m) === calMonth + 1; })
+                  .sort((a, b) => a.date.localeCompare(b.date));
 
-                const monthEvents = Object.entries(SCHOOL_EVENTS)
-                  .filter(([key]) => { const [y, m] = key.split('-'); return parseInt(y) === calYear && parseInt(m) === calMonth + 1; })
-                  .sort(([a], [b]) => a.localeCompare(b));
+                const monthRoleNotes = calendarNotes
+                  .filter(n => n.type === 'ROLE' && n.role === currentRole)
+                  .filter(n => { const [y, m] = n.date.split('-'); return parseInt(y) === calYear && parseInt(m) === calMonth + 1; })
+                  .sort((a, b) => a.date.localeCompare(b.date));
 
                 const prevMonth = () => { if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); } else setCalMonth(calMonth - 1); };
                 const nextMonth = () => { if (calMonth === 11) { setCalMonth(0); setCalYear(calYear + 1); } else setCalMonth(calMonth + 1); };
@@ -2247,39 +2261,41 @@
                             const dayOfWeek = (firstDay + i) % 7;
                             const isSun = dayOfWeek === 0;
                             const isSat = dayOfWeek === 6;
-                            const event = getEvent(day);
+                            const dayEvents = getEventsForDay(day);
                             return (
                               <div key={day} className={`h-24 border-b border-r border-slate-50 dark:border-slate-800/50 p-1.5 relative transition-colors hover:bg-purple-50/50 dark:hover:bg-purple-950/20 ${isSun ? 'bg-rose-50/40 dark:bg-rose-950/10' : isSat ? 'bg-blue-50/30 dark:bg-blue-950/10' : ''}`}>
                                 <span className={`text-xs font-extrabold inline-flex items-center justify-center w-7 h-7 rounded-full ${isToday(day) ? 'bg-purple-600 text-white shadow-md' : isSun ? 'text-rose-500' : isSat ? 'text-blue-500' : 'text-slate-700 dark:text-slate-300'}`}>{day}</span>
-                                {event && (
-                                  <div className={`mt-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold text-white ${event.color} truncate`} title={event.label}>
-                                    {event.type} {event.label}
-                                  </div>
-                                )}
+                                <div className="space-y-1 overflow-y-auto max-h-[60px] mt-1 pr-0.5 select-none scrollbar-thin">
+                                  {dayEvents.map((evt, idx) => (
+                                    <div key={idx} className={`px-1.5 py-0.5 rounded text-[8px] font-black text-white ${evt.color} truncate`} title={evt.text}>
+                                      {evt.icon} {evt.text}
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             );
                           })}
                         </div>
                       </div>
 
-                      {/* UPCOMING EVENTS SIDEBAR (1 col) */}
+                      {/* UPCOMING EVENTS & NOTES SIDEBAR (1 col) */}
                       <div className="lg:col-span-1 space-y-4">
-                        {/* Events for this month */}
+                        {/* 1. Global Events list for this month */}
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xs overflow-hidden">
-                          <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
-                            <h3 className="text-xs font-extrabold text-slate-900 dark:text-white">📋 Events in {MONTH_NAMES[calMonth]}</h3>
+                          <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                            <h3 className="text-xs font-black text-slate-900 dark:text-white">📢 School Global Events</h3>
                           </div>
-                          <div className="p-4 space-y-2.5 max-h-[400px] overflow-y-auto">
-                            {monthEvents.length === 0 ? (
-                              <p className="text-xs text-slate-400 font-medium text-center py-6">No events this month</p>
-                            ) : monthEvents.map(([dateKey, evt], i) => {
-                              const dayNum = parseInt(dateKey.split('-')[2]);
+                          <div className="p-4 space-y-2.5 max-h-[220px] overflow-y-auto">
+                            {monthGlobalNotes.length === 0 ? (
+                              <p className="text-xs text-slate-400 font-medium text-center py-4">No global events this month</p>
+                            ) : monthGlobalNotes.map((evt, i) => {
+                              const dayNum = parseInt(evt.date.split('-')[2]);
                               return (
-                                <div key={i} className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                                  <div className={`w-10 h-10 rounded-xl ${evt.color} flex items-center justify-center text-white text-lg shrink-0 shadow-sm`}>{evt.type}</div>
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{evt.label}</p>
-                                    <p className="text-[10px] text-slate-400 font-medium">{MONTH_NAMES[calMonth]} {dayNum}, {calYear}</p>
+                                <div key={i} className="flex items-start gap-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-100 dark:border-slate-800/80">
+                                  <div className={`w-8 h-8 rounded-xl ${evt.color} flex items-center justify-center text-white text-base shrink-0 shadow-xs`}>{evt.icon}</div>
+                                  <div className="min-w-0 text-xs">
+                                    <p className="font-extrabold text-slate-900 dark:text-white truncate">{evt.text}</p>
+                                    <p className="text-[9px] text-slate-400 font-bold">{MONTH_NAMES[calMonth]} {dayNum}, {calYear}</p>
                                   </div>
                                 </div>
                               );
@@ -2287,21 +2303,122 @@
                           </div>
                         </div>
 
-                        {/* Legend */}
+                        {/* 2. Role-Specific Notes Box */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xs overflow-hidden">
+                          <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-purple-50 dark:bg-purple-950/20">
+                            <h3 className="text-xs font-black text-purple-700 dark:text-purple-300">📓 {currentRole.replace('_', ' ')} Private Notes</h3>
+                          </div>
+                          <div className="p-4 space-y-2.5 max-h-[220px] overflow-y-auto">
+                            {monthRoleNotes.length === 0 ? (
+                              <p className="text-xs text-slate-400 font-medium text-center py-4">No specific notes for this role</p>
+                            ) : monthRoleNotes.map((evt, i) => {
+                              const dayNum = parseInt(evt.date.split('-')[2]);
+                              return (
+                                <div key={i} className="flex items-start gap-3 p-2.5 rounded-2xl bg-purple-50/20 dark:bg-purple-950/10 border border-purple-100/30">
+                                  <div className={`w-8 h-8 rounded-xl ${evt.color} flex items-center justify-center text-white text-base shrink-0`}>{evt.icon}</div>
+                                  <div className="min-w-0 text-xs">
+                                    <p className="font-extrabold text-slate-900 dark:text-white truncate">{evt.text}</p>
+                                    <p className="text-[9px] text-purple-600 dark:text-purple-400 font-bold">{MONTH_NAMES[calMonth]} {dayNum}, {calYear}</p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* 3. Interactive Form to Add Notes */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 space-y-3.5">
+                          <h3 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2">✍️ Add Calendar Note</h3>
+                          <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const noteText = e.target.noteText.value.trim();
+                            const noteDate = e.target.noteDate.value;
+                            const noteScope = e.target.noteScope ? e.target.noteScope.value : 'ROLE';
+                            const noteCategory = e.target.noteCategory.value;
+
+                            if (!noteText || !noteDate) return;
+
+                            const catMapping = {
+                              holiday: { color: 'bg-rose-500', icon: '🎌' },
+                              exam: { color: 'bg-amber-500', icon: '📝' },
+                              activity: { color: 'bg-emerald-500', icon: '🏅' },
+                              meeting: { color: 'bg-purple-500', icon: '👨‍👩‍👧' },
+                              exhibition: { color: 'bg-blue-500', icon: '🔬' },
+                              training: { color: 'bg-indigo-500', icon: '👨‍🏫' },
+                              private: { color: 'bg-indigo-600', icon: '📓' }
+                            };
+
+                            const newNote = {
+                              id: 'n-' + Date.now(),
+                              date: noteDate,
+                              text: noteText,
+                              type: noteScope,
+                              role: noteScope === 'ROLE' ? currentRole : null,
+                              color: catMapping[noteCategory].color,
+                              icon: catMapping[noteCategory].icon
+                            };
+
+                            setCalendarNotes([...calendarNotes, newNote]);
+                            e.target.reset();
+                            notify(`📆 Note added successfully!`);
+                          }} className="space-y-2.5 text-[11px]">
+                            <div>
+                              <label className="block text-slate-400 font-bold mb-1">Note Date</label>
+                              <input type="date" required name="noteDate" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white outline-none font-bold" />
+                            </div>
+                            <div>
+                              <label className="block text-slate-400 font-bold mb-1">Note / Event Text</label>
+                              <input type="text" required name="noteText" placeholder="e.g. Submit reports" className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white outline-none font-medium" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-slate-400 font-bold mb-1">Category</label>
+                                <select name="noteCategory" className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold outline-none">
+                                  <option value="private">Private Note</option>
+                                  <option value="meeting">Meeting</option>
+                                  <option value="exam">Examination</option>
+                                  <option value="holiday">Holiday</option>
+                                  <option value="activity">Activity</option>
+                                  <option value="exhibition">Exhibition</option>
+                                  <option value="training">Training</option>
+                                </select>
+                              </div>
+                              {['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'VICE_PRINCIPAL', 'ACCOUNTANT'].includes(currentRole) ? (
+                                <div>
+                                  <label className="block text-slate-400 font-bold mb-1">Visibility</label>
+                                  <select name="noteScope" className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold outline-none">
+                                    <option value="GLOBAL">Global (Everyone)</option>
+                                    <option value="ROLE">Role Only</option>
+                                  </select>
+                                </div>
+                              ) : (
+                                <div>
+                                  <label className="block text-slate-400 font-bold mb-1">Visibility</label>
+                                  <input type="text" readOnly value={`${currentRole.replace('_', ' ')} Only`} className="w-full px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 font-extrabold outline-none" />
+                                </div>
+                              )}
+                            </div>
+                            <button type="submit" className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl shadow-md transition-colors mt-2">
+                              Add Note
+                            </button>
+                          </form>
+                        </div>
+
+                        {/* 4. Legend */}
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xs p-5 space-y-3">
                           <h3 className="text-xs font-extrabold text-slate-900 dark:text-white">🏷️ Event Legend</h3>
-                          <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-2">
                             {[
                               { color: 'bg-rose-500', label: 'Holidays' },
-                              { color: 'bg-amber-500', label: 'Examinations' },
-                              { color: 'bg-emerald-500', label: 'Sports & Activities' },
-                              { color: 'bg-purple-500', label: 'Meetings & Events' },
-                              { color: 'bg-blue-500', label: 'Exhibitions & Fairs' },
-                              { color: 'bg-indigo-500', label: 'Staff & Training' },
+                              { color: 'bg-amber-500', label: 'Exams' },
+                              { color: 'bg-emerald-500', label: 'Activities' },
+                              { color: 'bg-purple-500', label: 'Meetings' },
+                              { color: 'bg-blue-500', label: 'Exhibitions' },
+                              { color: 'bg-indigo-500', label: 'Staff' },
                             ].map((l, i) => (
-                              <div key={i} className="flex items-center gap-2.5">
-                                <div className={`w-3 h-3 rounded-full ${l.color}`} />
-                                <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">{l.label}</span>
+                              <div key={i} className="flex items-center gap-1.5">
+                                <div className={`w-2.5 h-2.5 rounded-full ${l.color} shrink-0`} />
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">{l.label}</span>
                               </div>
                             ))}
                           </div>
