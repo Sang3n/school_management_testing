@@ -2200,6 +2200,51 @@
                 const today = new Date();
                 const isToday = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
 
+                const toDevanagari = (num) => {
+                  const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+                  return String(num).split('').map(digit => devanagariDigits[parseInt(digit)] || digit).join('');
+                };
+
+                const getNepaliDate = (d, m, y) => {
+                  if (m === 6) return d <= 16 ? d + 15 : d - 16;
+                  if (m === 7) return d <= 16 ? d + 15 : d - 16;
+                  if (m === 8) return d <= 15 ? d + 16 : d - 15;
+                  return (d + 15) % 31 || 31;
+                };
+
+                const getTithi = (nepaliDay) => {
+                  const list = [
+                    'तृतीया', 'चतुर्थी', 'पञ्चमी*', 'षष्ठी*', 'सप्तमी*', 
+                    'अष्टमी', 'नवमी', 'दशमी', 'एकादशी', 'द्वादशी', 
+                    'त्रयोदशी', 'चतुर्दशी', 'पूर्णिमा', 'प्रतिपदा', 'द्वितीया', 
+                    'तृतीया', 'चतुर्थी', 'पञ्चमी', 'षष्ठी', 'सप्तमी', 
+                    'अष्टमी', 'नवमी', 'दशमी', 'एकादशी', 'द्वादशी', 
+                    'त्रयोदशी', 'चतुर्दशी', 'औंसी', 'प्रतिपदा', 'द्वितीया', 
+                    'तृतीया'
+                  ];
+                  return list[nepaliDay - 1] || 'तृतीया';
+                };
+
+                const translateEvent = (text) => {
+                  const translations = {
+                    'Parent-Teacher Meeting': 'गोरखकाली पूजा',
+                    'Independence Day (Holiday)': 'स्वतन्त्रता दिवस (बिदा)',
+                    'Q3 Mid-Term Exams Start': 'परीक्षा सुरु',
+                    'Q3 Mid-Term Exams End': 'परीक्षा समाप्त',
+                    'Sports Day': 'खेलकुद दिवस',
+                    'Science Exhibition': 'विज्ञान प्रदर्शनी',
+                    'Staff Training Day': 'गोरखकाली पूजा',
+                    'New Academic Month Begins': 'नयाँ शैक्षिक सत्र',
+                    'Teachers Day Celebration': 'शिक्षक दिवस',
+                    'Inter-House Quiz Competition': 'क्विज प्रतियोगिता',
+                    'Dashain Holiday Begins': 'दशैं बिदा सुरु',
+                    'Summer Term Begins': 'गर्मी सत्र सुरु',
+                    'Annual Day Rehearsal': 'वार्षिकोत्सव पूर्वाभ्यास',
+                    'Annual Day Celebration': 'वार्षिकोत्सव समारोह'
+                  };
+                  return translations[text] || text;
+                };
+
                 const getEventsForDay = (day) => {
                   const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                   return calendarNotes.filter(n => {
@@ -2261,17 +2306,37 @@
                             const dayOfWeek = (firstDay + i) % 7;
                             const isSun = dayOfWeek === 0;
                             const isSat = dayOfWeek === 6;
+                            const nepaliDate = getNepaliDate(day, calMonth, calYear);
                             const dayEvents = getEventsForDay(day);
                             return (
-                              <div key={day} className={`h-24 border-b border-r border-slate-50 dark:border-slate-800/50 p-1.5 relative transition-colors hover:bg-purple-50/50 dark:hover:bg-purple-950/20 ${isSun ? 'bg-rose-50/40 dark:bg-rose-950/10' : isSat ? 'bg-blue-50/30 dark:bg-blue-950/10' : ''}`}>
-                                <span className={`text-xs font-extrabold inline-flex items-center justify-center w-7 h-7 rounded-full ${isToday(day) ? 'bg-purple-600 text-white shadow-md' : isSun ? 'text-rose-500' : isSat ? 'text-blue-500' : 'text-slate-700 dark:text-slate-300'}`}>{day}</span>
-                                <div className="space-y-1 overflow-y-auto max-h-[60px] mt-1 pr-0.5 select-none scrollbar-thin">
-                                  {dayEvents.map((evt, idx) => (
-                                    <div key={idx} className={`px-1.5 py-0.5 rounded text-[8px] font-black text-white ${evt.color} truncate`} title={evt.text}>
-                                      {evt.icon} {evt.text}
-                                    </div>
-                                  ))}
+                              <div key={day} className={`h-24 border-b border-r border-slate-50 dark:border-slate-800/50 p-1.5 relative transition-colors hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 ${isToday(day) ? 'bg-emerald-800 text-white shadow-md' : isSun ? 'bg-rose-50/40 dark:bg-rose-950/10' : isSat ? 'bg-blue-50/30 dark:bg-blue-950/10' : ''}`}>
+                                
+                                {/* English Date (Top Right) */}
+                                <span className={`absolute top-1.5 right-1.5 text-[9px] font-extrabold ${isToday(day) ? 'text-emerald-100' : 'text-slate-400'}`}>
+                                  {day}
+                                </span>
+
+                                {/* Event Text (Center Top) */}
+                                <div className="text-center text-[9px] font-black mt-1 h-7 overflow-hidden leading-tight select-none">
+                                  {dayEvents.length > 0 && (
+                                    <span className={isToday(day) ? 'text-white' : 'text-emerald-700 dark:text-emerald-450 font-extrabold'}>
+                                      {translateEvent(dayEvents[0].text)}
+                                    </span>
+                                  )}
                                 </div>
+
+                                {/* Nepali Numeral (Center) */}
+                                <div className="text-center -mt-1 font-black text-xl select-none">
+                                  <span className={isToday(day) ? 'text-white' : isSun ? 'text-rose-500' : isSat ? 'text-blue-500' : 'text-slate-800 dark:text-slate-200'}>
+                                    {toDevanagari(nepaliDate)}
+                                  </span>
+                                </div>
+
+                                {/* Tithi Text (Bottom Center) */}
+                                <div className={`text-center text-[9px] font-extrabold mt-0.5 select-none ${isToday(day) ? 'text-emerald-200 font-black' : isSun || nepaliDate === 3 || nepaliDate === 5 || nepaliDate === 10 || nepaliDate === 23 || nepaliDate === 16 ? 'text-rose-500/90 dark:text-rose-400/90' : 'text-slate-400 dark:text-slate-500'}`}>
+                                  {getTithi(nepaliDate)}
+                                </div>
+
                               </div>
                             );
                           })}
