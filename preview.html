@@ -655,17 +655,24 @@
                         </button>
                         {isOpen && !sidebarCollapsed && (
                           <div className="pl-8 space-y-1 border-l-2 border-slate-200 dark:border-slate-800 ml-4">
-                            {item.subItems.map((sub) => (
-                              <button
-                                key={sub.id}
-                                onClick={() => setCurrentTab(sub.id)}
-                                className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                                  currentTab === sub.id ? 'bg-purple-600 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-                                }`}
-                              >
-                                • {sub.label}
-                              </button>
-                            ))}
+                            {item.subItems
+                              .filter(sub => {
+                                if (currentRole === 'ACCOUNTANT') {
+                                  return !['admissions', 'promotions', 'transfers', 'teacher_attendance', 'performance', 'leave_requests', 'results', 'parent_meetings'].includes(sub.id);
+                                }
+                                return true;
+                              })
+                              .map((sub) => (
+                                <button
+                                  key={sub.id}
+                                  onClick={() => setCurrentTab(sub.id)}
+                                  className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                                    currentTab === sub.id ? 'bg-purple-600 text-white font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                  }`}
+                                >
+                                  • {sub.label}
+                                </button>
+                              ))}
                           </div>
                         )}
                       </div>
