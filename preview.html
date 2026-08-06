@@ -657,7 +657,7 @@
                           <div className="pl-8 space-y-1 border-l-2 border-slate-200 dark:border-slate-800 ml-4">
                             {item.subItems
                               .filter(sub => {
-                                if (currentRole === 'ACCOUNTANT') {
+                                if (['ACCOUNTANT', 'STUDENT', 'PARENT'].includes(currentRole)) {
                                   return !['admissions', 'promotions', 'transfers', 'teacher_attendance', 'performance', 'leave_requests', 'results', 'parent_meetings'].includes(sub.id);
                                 }
                                 return true;
